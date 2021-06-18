@@ -16,7 +16,7 @@ class UInteraction : public UInterface
 /**
  * 
  */
-class INTERACTIONSYSTEM_API IInteraction
+class SPOOKYGAME_API IInteraction
 {
 	GENERATED_BODY()
 

@@ -1,11 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Interaction/PlayerInteractComponent.h"
+#include "PlayerInteractComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/PlayerController.h"
-#include "Interaction/TriggerComponent.h"
-#include "Interaction/Interactable.h"
+#include "Interactable.h"
 
 
 // Sets default values for this component's properties
@@ -49,7 +48,7 @@ void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
 	if (bHitInteractable && HitActor)
 	{
 		/** Set interact message when hovering over an interactable */
-		if (HitActor->Interact(GetOwner()))
+		if (HitActor->CanInteract(GetOwner()))
 		{
 			InteractHover = HitActor;
 			OnUpdateInteract.Broadcast(true, InteractHover);
@@ -68,15 +67,12 @@ void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
 
 void UPlayerInteractComponent::Interact()
 {
+	// Allows functions to use OnInteract without player looking at interactable (ex. using equipped item)
+	OnInteract.Broadcast(InteractHover);
+
 	if (InteractHover)
 	{
 		/** Trigger interacted actor */
-		OnInteract.Broadcast(InteractHover);
 		InteractHover->Interact(GetOwner());
-
-		/** Call trigger actors from component */
-		UTriggerComponent* TriggerComponent = InteractHover->FindComponentByClass<UTriggerComponent>();
-		if (TriggerComponent)
-			TriggerComponent->TriggerActors(GetOwner());
 	}
 }

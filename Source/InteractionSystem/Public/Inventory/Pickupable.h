@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interaction/Interactable.h"
+#include "Interactable.h"
 #include "Pickupable.generated.h"
 
 class UTriggerComponent;
 class UStaticMeshComponent;
 
 UCLASS()
-class INTERACTIONSYSTEM_API APickupable : public AInteractable
+class SPOOKYGAME_API APickupable : public AInteractable
 {
 	GENERATED_BODY()
 	
@@ -17,8 +17,19 @@ public:
 
 	void OnInteract_Implementation(AActor* Interactor) override;
 
+	/** Add item to interactors inventory */
+	UFUNCTION()
+	void PickupItem(AActor* Interactor);
+
+	/**
+	 * Called when using item on self
+	 * @return void
+	*/
+	UFUNCTION(BlueprintNativeEvent)
+	void OnUseItem(AActor* User);
+
 	UPROPERTY(EditAnywhere, Category = "Pickupable")
-	int Amount;
+	int Amount = 1;
 
 	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetItemMesh() const { return ItemMesh ? ItemMesh : nullptr; };

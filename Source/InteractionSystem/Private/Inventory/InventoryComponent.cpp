@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Inventory/InventoryComponent.h"
+#include "InventoryComponent.h"
+#include "PlayerEquipComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Inventory/Pickupable.h"
+#include "Pickupable.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -95,11 +96,9 @@ bool UInventoryComponent::AddToInventory(UItemData* Item, const int Count)
 	if (Inventory.Num() < InventorySize)
 	{
 		/** Just add the item to a new slot */
-		FInventoryContents InventoryItem;
-		InventoryItem.ItemData = Item;
-		InventoryItem.Count = Count;
+		FInventoryContents* InventoryItem = new FInventoryContents(Item, Count);
 
-		int Slot = Inventory.Add(InventoryItem);
+		int Slot = Inventory.Add(*InventoryItem);
 		OnInventoryChange.Broadcast(true);
 
 		return true;

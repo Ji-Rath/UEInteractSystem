@@ -1,8 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Interaction/TriggerComponent.h"
-#include "Interaction/Interactable.h"
+#include "TriggerComponent.h"
+#include "Interactable.h"
 
 // Sets default values for this component's properties
 UTriggerComponent::UTriggerComponent()
@@ -19,6 +19,11 @@ UTriggerComponent::UTriggerComponent()
 void UTriggerComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (AInteractable* Owner = GetOwner<AInteractable>())
+	{
+		Owner->OnInteracted.AddDynamic(this, &UTriggerComponent::TriggerActors);
+	}
 }
 
 void UTriggerComponent::TriggerActors(AActor* Instigator)

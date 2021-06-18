@@ -6,10 +6,13 @@
 #include "GameFramework/Actor.h"
 #include "Interactable.generated.h"
 
+UDELEGATE()
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteract, AActor *, Interactor);
+
 class UItemData;
 
 UCLASS()
-class INTERACTIONSYSTEM_API AInteractable : public AActor
+class SPOOKYGAME_API AInteractable : public AActor
 {
 	GENERATED_BODY()
 	
@@ -24,7 +27,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	/** Implementation of interaction */
+	/** Implementation of interaction, call Interact() to trigger function */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnInteract(AActor* Interactor);
 
@@ -37,7 +40,7 @@ public:
 	bool Interact(AActor* Interactor);
 
 	/** Returns whether the interactable can be interacted with */
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Interaction")
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	bool CanInteract(AActor* Interactor) const;
 
 	/** Change the ability of the actor to be interacted with */
@@ -52,14 +55,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Interaction|Data")
 	FText GetName() const;
 
+	UPROPERTY(BlueprintAssignable)
+	FInteract OnInteracted;
+
 protected:
 	/** Determine whether the player can interact with the actor */
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	bool bCanInteract = true;
 
-	/** Amount of times the actor can be interacted, 0 for no limit */
+	/** Amount of times the actor can be interacted, -1 for no limit */
 	UPROPERTY(EditAnywhere, Category = "Interaction")
-	int InteractAmount = 0.f;
+	int InteractAmount = -1;
 
 	/** Determines whether the interactable will use a DataAsset for primary info */
 	UPROPERTY(EditAnywhere, Category = "Interaction|Data")
@@ -70,7 +76,7 @@ protected:
 	 * @warning overrided by DataAsset name if bUseData is true
 	 */
 	UPROPERTY(EditAnywhere, Category = "Interaction|Data", meta = (EditCondition = "!bUseData"))
-	FText Name = FText();
+	FText Name = FText::FromString("NoName");
 
 	UPROPERTY(EditAnywhere, Category = "Interaction|Data", meta = (EditCondition = "bUseData"))
 	UItemData* ItemData = nullptr;

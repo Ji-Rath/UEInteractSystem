@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Interaction/ItemData.h"
+#include "ItemData.h"
 #include "InventoryComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChange, bool, bAdded);
@@ -25,6 +25,12 @@ struct FInventoryContents
 		Count = 0;
 	}
 
+	FInventoryContents(UItemData* Data, int Amount)
+	{
+		ItemData = Data;
+		Count = Amount;
+	}
+
 	bool operator==(const FInventoryContents& OtherSlot) const
 	{
 		return ItemData == OtherSlot.ItemData;
@@ -36,7 +42,7 @@ struct FInventoryContents
  * Includes equip/unequip system
  */
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class INTERACTIONSYSTEM_API UInventoryComponent : public UActorComponent
+class SPOOKYGAME_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

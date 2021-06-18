@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Inventory/InventoryComponent.h"
 #include "Components/ActorComponent.h"
 #include "PhysicsGrabComponent.generated.h"
 
@@ -15,7 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrabUpdate, bool, bGrab, AInteract
  * Allows a pawn to grab a physics body through the use of a physics handle component
  */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class INTERACTIONSYSTEM_API UPhysicsGrabComponent : public UActorComponent
+class SPOOKYGAME_API UPhysicsGrabComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

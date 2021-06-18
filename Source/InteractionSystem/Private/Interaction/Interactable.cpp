@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Interaction/Interactable.h"
-#include "Interaction/ItemData.h"
+#include "Interactable.h"
+#include "ItemData.h"
+#include "TriggerComponent.h"
 
 // Sets default values
 AInteractable::AInteractable()
@@ -15,8 +16,10 @@ void AInteractable::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	if (bUseData && ItemData)
+	if (bUseData && IsValid(ItemData))
+	{
 		Name = ItemData->Name;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -24,23 +27,30 @@ void AInteractable::BeginPlay()
 {
 	Super::BeginPlay();
 
+	OnInteracted.AddDynamic(this, &AInteractable::OnInteract);
 }
 
 void AInteractable::OnInteract_Implementation(AActor* Interactor)
 {
-
+	//Blank implementation
 }
 
 bool AInteractable::Interact(AActor* Interactor)
 {
-	bool bReachedInteractLimit = InteractAmount <= 0 || (InteractCount < InteractAmount);
-	if (bCanInteract && CanInteract(Interactor) && bReachedInteractLimit)
+	bool bReachedInteractLimit = !(InteractAmount == -1 || (InteractCount < InteractAmount));
+	if (bCanInteract && CanInteract(Interactor) && !bReachedInteractLimit)
 	{
-		OnInteract(Interactor);
 		InteractCount++;
+		OnInteracted.Broadcast(Interactor);
+
 		return true;
 	}
 	return false;
+}
+
+bool AInteractable::CanInteract_Implementation(AActor* Interactor) const
+{
+	return true;
 }
 
 void AInteractable::SetInteractable(bool bInteractable)

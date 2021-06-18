@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Interaction/PhysicsGrabComponent.h"
+#include "PhysicsGrabComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
-#include "Interaction/Interactable.h"
+#include "Interactable.h"
 #include "DrawDebugHelpers.h"
+#include "AttentionComponent.h"
 
 // Sets default values for this component's properties
 UPhysicsGrabComponent::UPhysicsGrabComponent()
@@ -77,7 +78,7 @@ void UPhysicsGrabComponent::Grab()
 
 		/** Ensure there was a trace and that we are not dragging something triggerable */
 		GrabMesh = Cast<UStaticMeshComponent>(Hit.GetComponent());
-		if (bTraced && GrabMesh && !(Cast<AInteractable>(Hit.GetActor())))
+		if (bTraced && GrabMesh)
 		{
 			/** Grab object if below threshhold or simply push it */
 			if (GrabMesh->GetMass() < GrabWeightThreshhold)

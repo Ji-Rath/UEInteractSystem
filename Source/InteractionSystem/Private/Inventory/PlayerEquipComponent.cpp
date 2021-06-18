@@ -1,11 +1,11 @@
 
-#include "Inventory/PlayerEquipComponent.h"
+#include "PlayerEquipComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Inventory/InventoryComponent.h"
-#include "Interaction/PlayerInteractComponent.h"
+#include "InventoryComponent.h"
+#include "PlayerInteractComponent.h"
 #include "ItemUsable.h"
-#include "Interaction/Interactable.h"
+#include "Interactable.h"
 
 void UPlayerEquipComponent::BeginPlay()
 {
@@ -57,16 +57,20 @@ void UPlayerEquipComponent::EquipItem(UItemData* Item)
 	/** Spawn item and attach it to the player */
 	if (Item)
 	{
-		AActor* Interactable = GetWorld()->SpawnActor<AActor>(Item->ActorClass, GetOwner()->GetTransform());
-		FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+		TSubclassOf<AActor> ItemClass = Item->ActorClass;
+		if (ensureMsgf(ItemClass, TEXT("%s ItemData does not contain valid class!"), *Item->GetName()))
+		{
+			APickupable* Pickupable = GetWorld()->SpawnActor<APickupable>(ItemClass, GetOwner()->GetTransform());
+			FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 
-		Interactable->AttachToComponent(Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner())), TransformRules);
-		Interactable->SetActorEnableCollision(false);
-		if (auto* Mesh = Interactable->FindComponentByClass<UStaticMeshComponent>())
-			Mesh->SetSimulatePhysics(false);
-		EquippedItem = Item;
-		if (ItemAttachSpring)
-			ItemAttachSpring->TargetOffset.Z = ItemUnequipOffset;
+			Pickupable->AttachToComponent(Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner())), TransformRules);
+			Pickupable->SetActorEnableCollision(false);
+			if (auto* Mesh = Pickupable->FindComponentByClass<UStaticMeshComponent>())
+				Mesh->SetSimulatePhysics(false);
+			EquippedItem = Pickupable;
+			if (ItemAttachSpring)
+				ItemAttachSpring->TargetOffset.Z = ItemUnequipOffset;
+		}
 	}
 }
 
@@ -88,7 +92,15 @@ void UPlayerEquipComponent::UnequipItem()
 	}
 }
 
-UItemData* UPlayerEquipComponent::GetEquippedItem() const
+UItemData* UPlayerEquipComponent::GetEquippedItemData() const
+{
+	if (EquippedItem)
+		return EquippedItem->GetItemData();
+	else
+		return nullptr;
+}
+
+APickupable* UPlayerEquipComponent::GetEquippedItem() const
 {
 	return EquippedItem;
 }
@@ -114,9 +126,9 @@ void UPlayerEquipComponent::DropEquippedItem()
 				Mesh->AddImpulse(ForwardVector * ThrowImpulse);
 			}
 		}
+		/** Remove item from inventory */
+		InventoryCompRef->RemoveFromInventory(GetEquippedItemData(), 1);
 	}
-	/** Remove item from inventory */
-	InventoryCompRef->RemoveFromInventory(EquippedItem, 1);
 }
 
 void UPlayerEquipComponent::UpdateEquip(bool bAdded)
@@ -131,15 +143,33 @@ void UPlayerEquipComponent::UpdateEquip(bool bAdded)
 	else
 	{
 		/** Ensure that equipped item still exists */
-		if (InventoryCompRef->FindItemSlot(EquippedItem) == -1)
+		if (InventoryCompRef->FindItemSlot(GetEquippedItemData()) == -1)
 			UnequipItem();
 	}
 }
 
 void UPlayerEquipComponent::ItemInteract(AInteractable* Interactable)
 {
-	if (Interactable && Interactable->Implements<UItemUsable>())
+	APickupable* Item = GetEquippedItem();
+	if (Item)
 	{
-		IItemUsable::Execute_OnItemUse(Interactable, GetOwner(), GetEquippedItem());
+		UItemData* ItemData = Item->GetItemData();
+		if (ItemData)
+		{
+			if (Interactable)
+			{
+				/** Attempt to use item on viewed object */
+				if (Interactable->Implements<UItemUsable>())
+					IItemUsable::Execute_OnItemUse(Interactable, GetOwner(), ItemData);
+			}
+			else
+			{
+				/** Attempt to use the item in hand */
+				Item->OnUseItem(GetOwner());
+				OnItemUse.Broadcast(Item->GetItemData());
+			}
+		}
 	}
+	
 }
+ 
