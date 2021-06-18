@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ItemData.h"
+#include "Interaction/ItemData.h"
 #include "InventoryComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChange, bool, bAdded);
@@ -42,7 +42,7 @@ struct FInventoryContents
  * Includes equip/unequip system
  */
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class SPOOKYGAME_API UInventoryComponent : public UActorComponent
+class INTERACTIONSYSTEM_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

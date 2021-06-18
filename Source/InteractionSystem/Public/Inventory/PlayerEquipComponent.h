@@ -12,7 +12,7 @@ class UItemData;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, UItemData*, ItemData);
 
 UCLASS(Blueprintable)
-class SPOOKYGAME_API UPlayerEquipComponent : public UActorComponent
+class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
 {
 	GENERATED_BODY()
 	

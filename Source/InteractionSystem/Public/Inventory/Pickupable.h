@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Interactable.h"
+#include "Interaction/Interactable.h"
 #include "Pickupable.generated.h"
 
 class UTriggerComponent;
 class UStaticMeshComponent;
 
 UCLASS()
-class SPOOKYGAME_API APickupable : public AInteractable
+class INTERACTIONSYSTEM_API APickupable : public AInteractable
 {
 	GENERATED_BODY()
 	

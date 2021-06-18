@@ -1,4 +1,4 @@
-#include "ToggleInteractable.h"
+#include "Interaction/ToggleInteractable.h"
 
 void AToggleInteractable::ToggleInteract(AActor* Interactor)
 {

@@ -15,7 +15,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerInteract, AInteractable*, Int
  * Allows the player to interact with interactables, executing functionality based on what was interacted with
  */
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class SPOOKYGAME_API UPlayerInteractComponent : public UActorComponent
+class INTERACTIONSYSTEM_API UPlayerInteractComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

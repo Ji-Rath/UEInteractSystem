@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Pickupable.h"
-#include "InventoryComponent.h"
-#include "TriggerComponent.h"
+#include "Inventory/Pickupable.h"
+#include "Inventory/InventoryComponent.h"
+#include "Interaction/TriggerComponent.h"
 #include "Components/StaticMeshComponent.h"
 
 

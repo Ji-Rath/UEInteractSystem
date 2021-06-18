@@ -12,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteract, AActor *, Interactor);
 class UItemData;
 
 UCLASS()
-class SPOOKYGAME_API AInteractable : public AActor
+class INTERACTIONSYSTEM_API AInteractable : public AActor
 {
 	GENERATED_BODY()
 	

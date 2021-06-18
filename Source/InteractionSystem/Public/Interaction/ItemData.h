@@ -10,7 +10,7 @@
  * Data Asset that stores essential values for an interactable, more specifically a pickupable
  */
 UCLASS()
-class SPOOKYGAME_API UItemData : public UPrimaryDataAsset
+class INTERACTIONSYSTEM_API UItemData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	

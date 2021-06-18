@@ -1,12 +1,11 @@
 #pragma once
 
-#include "PhysicsGrabComponent.h"
+#include "Interaction/PhysicsGrabComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
-#include "Interactable.h"
+#include "Interaction/Interactable.h"
 #include "DrawDebugHelpers.h"
-#include "AttentionComponent.h"
 
 // Sets default values for this component's properties
 UPhysicsGrabComponent::UPhysicsGrabComponent()

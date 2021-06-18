@@ -9,7 +9,7 @@
 class AInteractable;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class SPOOKYGAME_API UTriggerComponent : public UActorComponent
+class INTERACTIONSYSTEM_API UTriggerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 

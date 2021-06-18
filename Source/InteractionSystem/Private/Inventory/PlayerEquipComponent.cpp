@@ -1,11 +1,11 @@
 
-#include "PlayerEquipComponent.h"
+#include "Inventory/PlayerEquipComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "InventoryComponent.h"
-#include "PlayerInteractComponent.h"
+#include "Inventory/InventoryComponent.h"
+#include "Interaction/PlayerInteractComponent.h"
 #include "ItemUsable.h"
-#include "Interactable.h"
+#include "Interaction/Interactable.h"
 
 void UPlayerEquipComponent::BeginPlay()
 {

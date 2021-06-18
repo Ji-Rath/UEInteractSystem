@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "InventoryComponent.h"
-#include "PlayerEquipComponent.h"
+#include "Inventory/InventoryComponent.h"
+#include "Inventory/PlayerEquipComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Pickupable.h"
+#include "Inventory/Pickupable.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()

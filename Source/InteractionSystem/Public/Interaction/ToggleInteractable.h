@@ -5,7 +5,7 @@
 #include "ToggleInteractable.generated.h"
 
 UCLASS()
-class SPOOKYGAME_API AToggleInteractable : public AInteractable
+class INTERACTIONSYSTEM_API AToggleInteractable : public AInteractable
 {
 	GENERATED_BODY()
 	

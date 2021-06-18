@@ -1,10 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PlayerInteractComponent.h"
+#include "Interaction/PlayerInteractComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/PlayerController.h"
-#include "Interactable.h"
+#include "Interaction/Interactable.h"
 
 
 // Sets default values for this component's properties
