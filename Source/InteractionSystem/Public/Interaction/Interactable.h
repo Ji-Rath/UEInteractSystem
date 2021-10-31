@@ -37,7 +37,7 @@ public:
 	 * @return bool Whether the interaction was successful
 	*/
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	bool Interact(AActor* Interactor);
+	virtual bool Interact(AActor* Interactor);
 
 	/** Returns whether the interactable can be interacted with */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")

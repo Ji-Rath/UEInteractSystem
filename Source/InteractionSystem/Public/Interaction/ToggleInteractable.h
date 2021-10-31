@@ -17,6 +17,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void ToggleInteract(AActor* Interactor);
 
+	bool Interact(AActor* Interactor) override;
+
 	UFUNCTION(BlueprintCallable, Category = "Interaction")
 	void SetState(AActor* Interactor, bool bOn);
 
