@@ -28,19 +28,28 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	//Delegate called when there is a change in InteractHover
-	UPROPERTY()
+	UPROPERTY(BlueprintAssignable)
 	FUpdateInteract OnUpdateInteract;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintAssignable)
 	FPlayerInteract OnInteract;
 
-	/** Called when the player wants to interact with the currently viewed interactable */
-	UFUNCTION(BlueprintCallable)
-	void Interact();
+	/**
+	 * Called when the player wants to interact with the currently viewed interactable
+	 * @param returns interacted actor
+	 * @return whether the interaction was successful
+	*/
+	UFUNCTION(BlueprintCallable)	
+	AInteractable* Interact(bool& bSuccess);
 
-private:
-	void HoverInteraction(float DeltaTime);
+	/**
+	 * BindAction friendly version of Interact()
+	 * @return void
+	*/
+	UFUNCTION()
+	void InteractAction();
 
+protected:
 	//Store interact actor that the player is currently looking at
 	UPROPERTY(VisibleAnywhere)
 	AInteractable* InteractHover = nullptr;
@@ -48,4 +57,7 @@ private:
 	//Distance that the player can interact with objects
 	UPROPERTY(EditDefaultsOnly)
 	float InteractDistance = 500.f;
+	
+	UFUNCTION()
+	virtual void HoverInteraction(float DeltaTime);
 };
