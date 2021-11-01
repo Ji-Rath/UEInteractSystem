@@ -78,6 +78,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Interaction|Data", meta = (EditCondition = "!bUseData"))
 	FText Name = FText::FromString("NoName");
 
+	/* Item data that contains name, description, etc */
 	UPROPERTY(EditAnywhere, Category = "Interaction|Data", meta = (EditCondition = "bUseData"))
 	UItemData* ItemData = nullptr;
 
