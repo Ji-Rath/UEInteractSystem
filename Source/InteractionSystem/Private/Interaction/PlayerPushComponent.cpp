@@ -1,4 +1,4 @@
-#include "PlayerPushComponent.h"
+#include "Interaction/PlayerPushComponent.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"

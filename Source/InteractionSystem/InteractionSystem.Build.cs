@@ -1,5 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class InteractionSystem : ModuleRules
@@ -8,19 +9,8 @@ public class InteractionSystem : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicIncludePaths.AddRange(
-            new string[] {
-                "InteractionSystem/Public",
-            }
-            );
-				
-		
-		PrivateIncludePaths.AddRange(
-			new string[] {
-				"InteractionSystem/Private",
-				// ... add other private include paths required here ...
-			}
-			);
+		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Public"));
+		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private"));
 			
 		
 		PublicDependencyModuleNames.AddRange(

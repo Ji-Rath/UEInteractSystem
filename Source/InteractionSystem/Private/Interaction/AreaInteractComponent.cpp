@@ -1,5 +1,5 @@
 
-#include "AreaInteractComponent.h"
+#include "Interaction/AreaInteractComponent.h"
 #include "Interaction/Interactable.h"
 #include "Components/ShapeComponent.h"
 
