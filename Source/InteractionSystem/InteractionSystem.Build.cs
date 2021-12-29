@@ -29,6 +29,7 @@ public class InteractionSystem : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"MoreMovement"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

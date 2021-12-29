@@ -24,13 +24,23 @@ public:
 
 	UPhysicsGrabComponent();
 
-	void BeginPlay() override;
+	virtual void BeginPlay() override;
+	
+	void ReleaseComponent();
+	void GrabComponent(UStaticMeshComponent* GrabMesh, FHitResult Hit);
+	void PushComponent(UStaticMeshComponent* GrabMesh);
 
 	/** Called to grab the in-range physics object */
-	void Grab();
+	void PhysicsInteract();
 
 	UPROPERTY()
 	FGrabUpdate OnGrabUpdate;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics|Grab")
+	bool bCanGrab = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics|Push")
+	bool bCanPush = true;
 
 private:
 	UPROPERTY()
@@ -46,7 +56,7 @@ private:
 	float GrabRange = 100.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Physics|Grab")
-	float GrabWeightThreshhold = 25.f;
+	float GrabWeightThreshold = 25.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Physics|Push")
 	float PushImpulse = 100000.f;
@@ -58,10 +68,10 @@ private:
 
 	FTimerHandle PushTimer;
 
-	void StopPushing();
-
 	UPROPERTY(EditDefaultsOnly, Category = "Physics|Push")
 	float PushDelay = 1.f;
+private:
+	FRotator InputScale;
 };
 
 

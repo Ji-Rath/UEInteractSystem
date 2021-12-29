@@ -10,8 +10,7 @@
 APickupable::APickupable()
 {
 	ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Item Mesh"));
-
-	bUseData = true;
+	
 	ItemMesh->SetGenerateOverlapEvents(false);
 	ItemMesh->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	ItemMesh->SetSimulatePhysics(true);
@@ -40,3 +39,9 @@ void APickupable::OnInteract_Implementation(AActor* Interactor)
 {
 	PickupItem(Interactor);
 }
+
+UItemData* APickupable::GetItemData() const
+{
+	return ItemData;
+}
+

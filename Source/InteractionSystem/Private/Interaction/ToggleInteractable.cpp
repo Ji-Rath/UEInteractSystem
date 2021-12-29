@@ -1,5 +1,10 @@
 #include "Interaction/ToggleInteractable.h"
 
+AToggleInteractable::AToggleInteractable() : Super()
+{
+	ConstructInteractable();
+}
+
 void AToggleInteractable::ToggleInteract(AActor* Interactor)
 {
 	SetState(Interactor, !bIsOn);
@@ -26,13 +31,6 @@ void AToggleInteractable::SetState(AActor* Interactor, bool bOn)
 		Interact(Interactor);
 	}
 		
-}
-
-void AToggleInteractable::OnConstruction(const FTransform& Transform)
-{
-	Super::OnConstruction(Transform);
-
-	ConstructInteractable();
 }
 
 bool AToggleInteractable::GetState() const

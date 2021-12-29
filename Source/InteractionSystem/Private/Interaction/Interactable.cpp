@@ -12,16 +12,6 @@ AInteractable::AInteractable()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AInteractable::OnConstruction(const FTransform& Transform)
-{
-	Super::OnConstruction(Transform);
-
-	if (bUseData && IsValid(ItemData))
-	{
-		Name = ItemData->Name;
-	}
-}
-
 // Called when the game starts or when spawned
 void AInteractable::BeginPlay()
 {
@@ -37,8 +27,8 @@ void AInteractable::OnInteract_Implementation(AActor* Interactor)
 
 bool AInteractable::Interact(AActor* Interactor)
 {
-	bool bReachedInteractLimit = !(InteractAmount == -1 || (InteractCount < InteractAmount));
-	if (bCanInteract && CanInteract(Interactor) && !bReachedInteractLimit)
+	const bool bReachedInteractLimit = !(InteractAmount == -1 || (InteractCount < InteractAmount));
+	if (CanInteract(Interactor) && !bReachedInteractLimit)
 	{
 		InteractCount++;
 		OnInteracted.Broadcast(Interactor);
@@ -50,21 +40,17 @@ bool AInteractable::Interact(AActor* Interactor)
 
 bool AInteractable::CanInteract_Implementation(AActor* Interactor) const
 {
-	return true;
+	bool bSuccess = true;
+	
+	if (!bPawnInteract && Cast<APawn>(Interactor))
+	{
+		bSuccess = false;
+	}
+	return bSuccess;
 }
 
-void AInteractable::SetInteractable(bool bInteractable)
-{
-	bCanInteract = bInteractable;
-}
-
-FText AInteractable::GetName() const 
+FText AInteractable::GetName() const
 {
 	return Name;
-}
-
-UItemData* AInteractable::GetItemData() const
-{
-	return ItemData;
 }
 

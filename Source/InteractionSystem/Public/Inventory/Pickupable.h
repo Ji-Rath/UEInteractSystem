@@ -15,14 +15,14 @@ class INTERACTIONSYSTEM_API APickupable : public AInteractable
 public:
 	APickupable();
 
-	void OnInteract_Implementation(AActor* Interactor) override;
+	virtual void OnInteract_Implementation(AActor* Interactor) override;
 
 	/** Add item to interactors inventory */
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void PickupItem(AActor* Interactor);
 
 	/**
-	 * Called when using item on self
+	 * Called when using equipped item
 	 * @return void
 	*/
 	UFUNCTION(BlueprintNativeEvent)
@@ -31,8 +31,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Pickupable")
 	int Amount = 1;
 
-	UFUNCTION(BlueprintCallable)
-	UStaticMeshComponent* GetItemMesh() const { return ItemMesh ? ItemMesh : nullptr; };
+	/* Item data that contains name, description, etc */
+	UPROPERTY(EditAnywhere, Category = "Interaction|Data")
+	UItemData* ItemData = nullptr;
+
+	/** Returns the item data */
+	UFUNCTION(BlueprintCallable, Category = "Interaction|Data")
+	UItemData* GetItemData() const;
 
 protected:
 	UPROPERTY(VisibleAnywhere)

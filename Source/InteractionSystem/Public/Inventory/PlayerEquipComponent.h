@@ -49,20 +49,30 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	FComponentReference ItemAttachParent;
 
+	UPROPERTY()
 	APickupable* EquippedItem = nullptr;
 
+	/** Starting offset for equipping an item */
 	UPROPERTY(EditDefaultsOnly)
 	float ItemUnequipOffset = -25.f;
 
+	/** Offset when the equipped item is fully on screen */
 	UPROPERTY(EditDefaultsOnly)
 	float InitialSpringArmOffset = 0.f;
 
+	/** Speed to bring equipped item into view */
+	UPROPERTY(EditDefaultsOnly)
+	float EquipInterpSpeed = 3.f;
+
+	/** Impulse to throw equipped item */
 	UPROPERTY(EditDefaultsOnly)
 	float ThrowImpulse = 500.f;
 
-	USpringArmComponent* ItemAttachSpring;
+	UPROPERTY()
+	USpringArmComponent* ItemAttachSpring = nullptr;
 
-	UInventoryComponent* InventoryCompRef;
+	UPROPERTY()
+	UInventoryComponent* InventoryCompRef = nullptr;
 
 	TArray<FInventoryContents> Inventory;
 

@@ -5,7 +5,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Interaction/Interactable.h"
-#include "DrawDebugHelpers.h"
+#include "AdvCharacterMovementComponent.h"
+#include "TimerManager.h"
 
 // Sets default values for this component's properties
 UPhysicsGrabComponent::UPhysicsGrabComponent()
@@ -21,24 +22,24 @@ void UPhysicsGrabComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (HandleRef && HandleRef->GetGrabbedComponent() && Player)
+	UPrimitiveComponent* GrabComp = HandleRef->GetGrabbedComponent();
+	if (HandleRef && GrabComp && Player)
 	{
-		CurrentGrabDistance = UKismetMathLibrary::FInterpTo(CurrentGrabDistance, GrabRange, DeltaTime, 3.f);
-		APlayerController* PlayerController = Player->GetController<APlayerController>();
-		FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Player->GetControlRotation());
-		FVector Distance = ForwardVector * CurrentGrabDistance;
-		FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
-		FVector TargetLocation = CameraLocation + Distance;
+		//CurrentGrabDistance = UKismetMathLibrary::FInterpTo(CurrentGrabDistance, GrabRange, DeltaTime, 3.f);
+		const APlayerController* PlayerController = Player->GetController<APlayerController>();
+		const FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Player->GetControlRotation());
+		const FVector Distance = ForwardVector * CurrentGrabDistance;
+		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+		const FVector TargetLocation = CameraLocation + Distance;
 		
 		/** Update the target location to be in front of the players camera */
-		HandleRef->SetTargetLocationAndRotation(TargetLocation, FRotator::ZeroRotator);
+		HandleRef->SetTargetLocation(TargetLocation);
 
 		/** Release grabbed component if it goes out of range */
-		bool bOutsideRange = FVector::Distance(TargetLocation, HandleRef->GetGrabbedComponent()->GetComponentLocation()) > MaxDistance;
+		const bool bOutsideRange = FVector::Distance(TargetLocation, GrabComp->GetComponentLocation()) > MaxDistance;
 		if (bOutsideRange)
 		{
-			HandleRef->ReleaseComponent();
-			OnGrabUpdate.Broadcast(false, nullptr);
+			ReleaseComponent();
 		}
 	}
 }
@@ -48,51 +49,107 @@ void UPhysicsGrabComponent::BeginPlay()
 	Super::BeginPlay();
 	
 	Player = GetOwner<APawn>();
+	check(Player);
+	
 	HandleRef = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 	ensure(HandleRef);
+
+	const APlayerController* PlayerController = Player->GetController<APlayerController>();
+	if  (PlayerController)
+	{
+		InputScale.Pitch = PlayerController->InputPitchScale;
+		InputScale.Roll = PlayerController->InputRollScale;
+		InputScale.Yaw = PlayerController->InputYawScale;
+	}
 }
 
-void UPhysicsGrabComponent::Grab()
+void UPhysicsGrabComponent::ReleaseComponent()
 {
-	UStaticMeshComponent* GrabMesh = Cast<UStaticMeshComponent>(HandleRef->GetGrabbedComponent());
-	if (GrabMesh)
+	if (Player && HandleRef)
 	{
-		HandleRef->ReleaseComponent();
-		OnGrabUpdate.Broadcast(false, nullptr);
-		GrabMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-	}
-	else
-	{
-		/** Ensure that the pawn owner is valid */
-		if (!Player) return;
+		UPrimitiveComponent* GrabbedComponent = HandleRef->GetGrabbedComponent();
 		APlayerController* PlayerController = Player->GetController<APlayerController>();
+		auto* CharMovement = Player->FindComponentByClass<UAdvCharacterMovementComponent>();
+		if (GrabbedComponent && PlayerController && CharMovement)
+		{
+			OnGrabUpdate.Broadcast(false, nullptr);
+			GrabbedComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+			CharMovement->SpeedMultiplier = 1.f;
+			PlayerController->InputPitchScale = InputScale.Pitch;
+			PlayerController->InputYawScale = InputScale.Yaw;
+			PlayerController->InputRollScale = InputScale.Roll;
+			HandleRef->ReleaseComponent();	
+		}
+	}
+}
 
-		FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Player->GetControlRotation());
-		FVector Distance = ForwardVector * InteractDistance;
-		FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+void UPhysicsGrabComponent::GrabComponent(UStaticMeshComponent* GrabMesh, FHitResult Hit)
+{
+	if (Player)
+	{
+		APlayerController* PlayerController = Player->GetController<APlayerController>();
+		if (PlayerController)
+		{
+			const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+			HandleRef->GrabComponentAtLocationWithRotation(GrabMesh, Hit.BoneName, Hit.ImpactPoint, Hit.GetComponent()->GetComponentRotation());
+			OnGrabUpdate.Broadcast(true, nullptr);
+			HandleRef->SetTargetLocation(Hit.ImpactPoint);
+			GrabMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+			CurrentGrabDistance = FVector::Distance(Hit.ImpactPoint, CameraLocation);
+				
+			const float SpeedMultiplier = 1 - (GrabMesh->GetMass() / GrabWeightThreshold);
+			GetOwner()->FindComponentByClass<UAdvCharacterMovementComponent>()->SpeedMultiplier = SpeedMultiplier;
+			PlayerController->InputPitchScale *= SpeedMultiplier;
+			PlayerController->InputYawScale *= SpeedMultiplier;
+			PlayerController->InputRollScale *= SpeedMultiplier;
+		}
+	}
+}
 
-		FCollisionObjectQueryParams QueryParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody);
+void UPhysicsGrabComponent::PushComponent(UStaticMeshComponent* GrabMesh)
+{
+	const FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Player->GetControlRotation());
+	if (bCanPush && !GetWorld()->GetTimerManager().IsTimerActive(PushTimer))
+	{
+		GrabMesh->AddImpulse(ForwardVector * PushImpulse);
+		GetWorld()->GetTimerManager().SetTimer(PushTimer, PushDelay, false);
+	}
+}
+
+void UPhysicsGrabComponent::PhysicsInteract()
+{
+	/** Ensure that the pawn owner is valid */
+	if (!Player) return;
+	const APlayerController* PlayerController = Player->GetController<APlayerController>();
+	
+	UStaticMeshComponent* GrabMesh = Cast<UStaticMeshComponent>(HandleRef->GetGrabbedComponent());
+	if (!GrabMesh)
+	{
+		const FVector ForwardVector = UKismetMathLibrary::GetForwardVector(Player->GetControlRotation());
+		const FVector Distance = ForwardVector * InteractDistance;
+		const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
+
 		FHitResult Hit;
-		bool bTraced = GetWorld()->LineTraceSingleByObjectType(OUT Hit, CameraLocation, CameraLocation + Distance, QueryParams);
+		const FCollisionObjectQueryParams QueryParams = FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody);
+		const bool bTraced = GetWorld()->LineTraceSingleByObjectType(OUT Hit, CameraLocation, CameraLocation + Distance, QueryParams);
 
 		/** Ensure there was a trace and that we are not dragging something triggerable */
 		GrabMesh = Cast<UStaticMeshComponent>(Hit.GetComponent());
 		if (bTraced && GrabMesh)
 		{
 			/** Grab object if below threshhold or simply push it */
-			if (GrabMesh->GetMass() < GrabWeightThreshhold)
+			if (bCanGrab && GrabMesh->GetMass() < GrabWeightThreshold)
 			{
-				HandleRef->GrabComponentAtLocationWithRotation(GrabMesh, Hit.BoneName, Hit.GetComponent()->GetComponentLocation(), Hit.GetComponent()->GetComponentRotation());
-				GrabMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-				OnGrabUpdate.Broadcast(true, nullptr);
-				HandleRef->SetTargetLocation(Hit.GetComponent()->GetComponentLocation());
-				CurrentGrabDistance = FVector::Distance(Hit.GetComponent()->GetComponentLocation(), CameraLocation);
+				GrabComponent(GrabMesh, Hit);
 			}
-			else if (!GetWorld()->GetTimerManager().IsTimerActive(PushTimer))
+			else if (bCanPush)
 			{
-				GrabMesh->AddImpulse(ForwardVector * PushImpulse);
-				GetWorld()->GetTimerManager().SetTimer(PushTimer, PushDelay, false);
+				PushComponent(GrabMesh);
 			}
 		}
+	}
+	else
+	{
+		ReleaseComponent();
 	}
 }

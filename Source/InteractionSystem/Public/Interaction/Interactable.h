@@ -20,8 +20,6 @@ public:
 	// Sets default values for this actor's properties
 	AInteractable();
 
-	void OnConstruction(const FTransform& Transform) override;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -30,6 +28,7 @@ public:
 	/** Implementation of interaction, call Interact() to trigger function */
 	UFUNCTION(BlueprintNativeEvent)
 	void OnInteract(AActor* Interactor);
+	virtual void OnInteract_Implementation(AActor* Interactor);
 
 	/**
 	 * Called to interact with interactable
@@ -43,44 +42,29 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	bool CanInteract(AActor* Interactor) const;
 
-	/** Change the ability of the actor to be interacted with */
-	UFUNCTION(BlueprintCallable, Category = "Interaction")
-	void SetInteractable(bool bIsInteractable);
-
-	/** Returns the item data */
-	UFUNCTION(BlueprintCallable, Category = "Interaction|Data")
-	UItemData* GetItemData() const;
-
 	/** Returns the name of the interactable */
 	UFUNCTION(BlueprintCallable, Category = "Interaction|Data")
-	FText GetName() const;
+	virtual FText GetName() const;
 
 	UPROPERTY(BlueprintAssignable)
 	FInteract OnInteracted;
 
 protected:
-	/** Determine whether the player can interact with the actor */
-	UPROPERTY(EditAnywhere, Category = "Interaction")
-	bool bCanInteract = true;
-
 	/** Amount of times the actor can be interacted, -1 for no limit */
 	UPROPERTY(EditAnywhere, Category = "Interaction")
 	int InteractAmount = -1;
 
-	/** Determines whether the interactable will use a DataAsset for primary info */
-	UPROPERTY(EditAnywhere, Category = "Interaction|Data")
-	bool bUseData = false;
-
 	/**
 	 * Name of interactable
-	 * @warning overrided by DataAsset name if bUseData is true
 	 */
-	UPROPERTY(EditAnywhere, Category = "Interaction|Data", meta = (EditCondition = "!bUseData"))
+	UPROPERTY(EditAnywhere, Category = "Interaction|Data")
 	FText Name = FText::FromString("NoName");
 
-	/* Item data that contains name, description, etc */
-	UPROPERTY(EditAnywhere, Category = "Interaction|Data", meta = (EditCondition = "bUseData"))
-	UItemData* ItemData = nullptr;
+	/**
+	 * @brief Whether a pawn can interact with this object
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction")
+	bool bPawnInteract = true;
 
 private:
 	int InteractCount = 0;

@@ -55,7 +55,7 @@ void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 	for (AInteractable* Interactable : ActorsToTrigger)
 	{
 		/** Call trigger function for all actors in array if they implement the trigger interface */
-		Interactable->Interact(Instigator);
+		Interactable->Interact(GetOwner());
 	}
 }
 

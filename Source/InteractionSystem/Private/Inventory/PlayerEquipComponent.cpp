@@ -4,8 +4,9 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/PlayerInteractComponent.h"
-#include "ItemUsable.h"
 #include "Interaction/Interactable.h"
+#include "Inventory/ItemUsable.h"
+#include "Inventory/Pickupable.h"
 
 void UPlayerEquipComponent::BeginPlay()
 {
@@ -41,12 +42,12 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	/** Interp equipped item to move smoothly with camera rotation */
+	/** Interp equipped item to move smoothly into view */
 	if (EquippedItem && ItemAttachSpring)
 	{
-		float CurrentOffset = ItemAttachSpring->TargetOffset.Z;
+		const float CurrentOffset = ItemAttachSpring->TargetOffset.Z;
 		if (!FMath::IsNearlyEqual(CurrentOffset, InitialSpringArmOffset))
-			ItemAttachSpring->TargetOffset.Z = UKismetMathLibrary::FInterpTo(CurrentOffset, InitialSpringArmOffset, DeltaTime, 5.f);
+			ItemAttachSpring->TargetOffset.Z = UKismetMathLibrary::FInterpTo(CurrentOffset, InitialSpringArmOffset, DeltaTime, EquipInterpSpeed);
 	}
 }
 
