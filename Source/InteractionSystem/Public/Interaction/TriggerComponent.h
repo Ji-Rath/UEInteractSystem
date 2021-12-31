@@ -8,7 +8,7 @@
 
 class AInteractable;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UTriggerComponent : public UActorComponent
 {
 	GENERATED_BODY()
