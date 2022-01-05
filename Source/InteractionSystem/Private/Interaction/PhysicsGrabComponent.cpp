@@ -73,12 +73,8 @@ void UPhysicsGrabComponent::ReleaseComponent()
 		if (GrabbedComponent && PlayerController && CharMovement)
 		{
 			OnGrabUpdate.Broadcast(false, nullptr);
-			GrabbedComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-			CharMovement->SpeedMultiplier = 1.f;
-			PlayerController->InputPitchScale = InputScale.Pitch;
-			PlayerController->InputYawScale = InputScale.Yaw;
-			PlayerController->InputRollScale = InputScale.Roll;
-			HandleRef->ReleaseComponent();	
+			GrabbedComponent->SetCollisionResponseToChannel(ECC_Pawn, PawnResponse);
+			HandleRef->ReleaseComponent();
 		}
 	}
 }
@@ -94,14 +90,9 @@ void UPhysicsGrabComponent::GrabComponent(UStaticMeshComponent* GrabMesh, FHitRe
 			HandleRef->GrabComponentAtLocationWithRotation(GrabMesh, Hit.BoneName, Hit.ImpactPoint, Hit.GetComponent()->GetComponentRotation());
 			OnGrabUpdate.Broadcast(true, nullptr);
 			HandleRef->SetTargetLocation(Hit.ImpactPoint);
+			PawnResponse = GrabMesh->GetCollisionResponseToChannel(ECC_Pawn);
 			GrabMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 			CurrentGrabDistance = FVector::Distance(Hit.ImpactPoint, CameraLocation);
-				
-			const float SpeedMultiplier = 1 - (GrabMesh->GetMass() / GrabWeightThreshold);
-			GetOwner()->FindComponentByClass<UAdvCharacterMovementComponent>()->SpeedMultiplier = SpeedMultiplier;
-			PlayerController->InputPitchScale *= SpeedMultiplier;
-			PlayerController->InputYawScale *= SpeedMultiplier;
-			PlayerController->InputRollScale *= SpeedMultiplier;
 		}
 	}
 }
@@ -114,6 +105,13 @@ void UPhysicsGrabComponent::PushComponent(UStaticMeshComponent* GrabMesh)
 		GrabMesh->AddImpulse(ForwardVector * PushImpulse);
 		GetWorld()->GetTimerManager().SetTimer(PushTimer, PushDelay, false);
 	}
+}
+
+void UPhysicsGrabComponent::PushComponent()
+{
+	UStaticMeshComponent* PushMesh = Cast<UStaticMeshComponent>(HandleRef->GetGrabbedComponent());
+	if (PushMesh)
+		PushComponent(PushMesh);
 }
 
 void UPhysicsGrabComponent::PhysicsInteract()
@@ -141,10 +139,6 @@ void UPhysicsGrabComponent::PhysicsInteract()
 			if (bCanGrab && GrabMesh->GetMass() < GrabWeightThreshold)
 			{
 				GrabComponent(GrabMesh, Hit);
-			}
-			else if (bCanPush)
-			{
-				PushComponent(GrabMesh);
 			}
 		}
 	}

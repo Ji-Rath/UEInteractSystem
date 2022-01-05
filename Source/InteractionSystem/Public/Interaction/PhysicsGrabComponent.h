@@ -25,10 +25,20 @@ public:
 	UPhysicsGrabComponent();
 
 	virtual void BeginPlay() override;
-	
+
+	/** Release the currently grabbed component */
+	UFUNCTION(BlueprintCallable)
 	void ReleaseComponent();
+
+	/** Grab the selected mesh */
+	UFUNCTION(BlueprintCallable)
 	void GrabComponent(UStaticMeshComponent* GrabMesh, FHitResult Hit);
+
+	/** Push the selected mesh */
+	UFUNCTION(BlueprintCallable)
 	void PushComponent(UStaticMeshComponent* GrabMesh);
+	
+	void PushComponent();
 
 	/** Called to grab the in-range physics object */
 	void PhysicsInteract();
@@ -72,6 +82,8 @@ private:
 	float PushDelay = 1.f;
 private:
 	FRotator InputScale;
+
+	ECollisionResponse PawnResponse;
 };
 
 
