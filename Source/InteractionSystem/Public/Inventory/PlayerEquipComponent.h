@@ -11,7 +11,7 @@ class UItemData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, UItemData*, ItemData);
 
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
 {
 	GENERATED_BODY()

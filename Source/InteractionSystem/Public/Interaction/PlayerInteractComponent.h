@@ -14,7 +14,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerInteract, AInteractable*, Int
 /**
  * Allows the player to interact with interactables, executing functionality based on what was interacted with
  */
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UPlayerInteractComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -26,13 +26,6 @@ public:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	//Delegate called when there is a change in InteractHover
-	UPROPERTY(BlueprintAssignable)
-	FUpdateInteract OnUpdateInteract;
-
-	UPROPERTY(BlueprintAssignable)
-	FPlayerInteract OnInteract;
 
 	/**
 	 * Called when the player wants to interact with the currently viewed interactable
@@ -49,15 +42,22 @@ public:
 	UFUNCTION()
 	void InteractAction();
 
+	//Delegate called when there is a change in InteractHover
+	UPROPERTY(BlueprintAssignable)
+	FUpdateInteract OnUpdateInteract;
+
+	UPROPERTY(BlueprintAssignable)
+	FPlayerInteract OnInteract;
+
 protected:
+	UFUNCTION()
+	virtual void HoverInteraction(float DeltaTime);
+	
 	//Store interact actor that the player is currently looking at
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	AInteractable* InteractHover = nullptr;
 
 	//Distance that the player can interact with objects
 	UPROPERTY(EditDefaultsOnly)
 	float InteractDistance = 500.f;
-	
-	UFUNCTION()
-	virtual void HoverInteraction(float DeltaTime);
 };

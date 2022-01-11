@@ -111,7 +111,10 @@ void UPhysicsGrabComponent::PushComponent()
 {
 	UStaticMeshComponent* PushMesh = Cast<UStaticMeshComponent>(HandleRef->GetGrabbedComponent());
 	if (PushMesh)
+	{
+		HandleRef->ReleaseComponent();
 		PushComponent(PushMesh);
+	}
 }
 
 void UPhysicsGrabComponent::PhysicsInteract()

@@ -13,7 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrabUpdate, bool, bGrab, AInteract
 /**
  * Allows a pawn to grab a physics body through the use of a physics handle component
  */
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+UCLASS(Blueprintable, ClassGroup = (Interactable), meta = (BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UPhysicsGrabComponent : public UActorComponent
 {
 	GENERATED_BODY()
