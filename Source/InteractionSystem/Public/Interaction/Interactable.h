@@ -42,6 +42,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	bool CanInteract(AActor* Interactor) const;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintImplementableEvent)
+	FText GetInteractMessage();
+
 	/** Returns the name of the interactable */
 	UFUNCTION(BlueprintCallable, Category = "Interaction|Data")
 	virtual FText GetName() const;
@@ -58,7 +61,7 @@ protected:
 	 * Name of interactable
 	 */
 	UPROPERTY(EditAnywhere, Category = "Interaction|Data")
-	FText Name = FText::FromString("NoName");
+	FText Name;
 
 	/**
 	 * @brief Whether a pawn can interact with this object
