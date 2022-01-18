@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "InventoryComponent.h"
+#include "Interaction/InteractableComponent.h"
 #include "PlayerEquipComponent.generated.h"
 
 class USpringArmComponent;
@@ -33,39 +34,39 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UnequipItem();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
 	UItemData* GetEquippedItemData() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	APickupable* GetEquippedItem() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
+	AActor* GetEquippedItem() const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
 	void DropEquippedItem();
 
 	UPROPERTY()
 	FUseItem OnItemUse;
 
 private:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	FComponentReference ItemAttachParent;
 
 	UPROPERTY()
-	APickupable* EquippedItem = nullptr;
+	AActor* EquippedItem = nullptr;
 
 	/** Starting offset for equipping an item */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	float ItemUnequipOffset = -25.f;
 
 	/** Offset when the equipped item is fully on screen */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	float InitialSpringArmOffset = 0.f;
 
 	/** Speed to bring equipped item into view */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	float EquipInterpSpeed = 3.f;
 
 	/** Impulse to throw equipped item */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	float ThrowImpulse = 500.f;
 
 	UPROPERTY()
@@ -82,7 +83,7 @@ private:
 
 	/** Called to use an item on an interactable */
 	UFUNCTION()
-	void ItemInteract(AInteractable* Interactable);
+	void ItemInteract(UInteractableComponent* Interactable);
 
 };
 

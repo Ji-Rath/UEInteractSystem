@@ -7,8 +7,9 @@
 class IInteraction;
 class UPhysicsHandleComponent;
 class AInteractable;
+class UInteractableComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrabUpdate, bool, bGrab, AInteractable*, Actor);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrabUpdate, bool, bGrab, UInteractableComponent*, Actor);
 
 /**
  * Allows a pawn to grab a physics body through the use of a physics handle component
@@ -27,20 +28,23 @@ public:
 	virtual void BeginPlay() override;
 
 	/** Release the currently grabbed component */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "PhysicsGrab")
 	void ReleaseComponent();
 
 	/** Grab the selected mesh */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "PhysicsGrab")
 	void GrabComponent(UStaticMeshComponent* GrabMesh, FHitResult Hit);
 
 	/** Push the selected mesh */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "PhysicsGrab")
 	void PushComponent(UStaticMeshComponent* GrabMesh);
-	
-	void PushComponent();
+
+	/** Push the currently grabbed component */
+	UFUNCTION(BlueprintCallable, Category = "PhysicsGrab")
+	void PushGrabbedComponent();
 
 	/** Called to grab the in-range physics object */
+	UFUNCTION(BlueprintCallable, Category = "PhysicsGrab")
 	void PhysicsInteract();
 
 	UPROPERTY()

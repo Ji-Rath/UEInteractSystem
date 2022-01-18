@@ -2,9 +2,12 @@
 
 
 #include "Inventory/InventoryComponent.h"
+
+#include "Engine/World.h"
+#include "GameFramework/Actor.h"
+#include "Inventory/PickupableComponent.h"
 #include "Inventory/PlayerEquipComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Inventory/Pickupable.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -31,9 +34,9 @@ void UInventoryComponent::DropItem(const UItemData* Item, const int Count /*= 1*
 	APawn* Player = GetOwner<APawn>();
 	FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	APickupable* DroppedItem = GetWorld()->SpawnActor<APickupable>(Item->ActorClass, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+	AActor* DroppedItem = GetWorld()->SpawnActor<AActor>(Item->ActorClass, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 
-	DroppedItem->Amount = Count;
+	DroppedItem->FindComponentByClass<UPickupableComponent>()->Amount = Count;
 
 	RemoveFromInventory(Item, Count);
 }

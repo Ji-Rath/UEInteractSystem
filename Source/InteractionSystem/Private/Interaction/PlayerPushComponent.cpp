@@ -2,8 +2,8 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Interaction/ToggleInteractable.h"
 #include "DrawDebugHelpers.h"
+#include "Interaction/InteractableComponent.h"
 
 
 UPlayerPushComponent::UPlayerPushComponent()
@@ -41,11 +41,11 @@ void UPlayerPushComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 		FHitResult OutHit;
 		GetWorld()->LineTraceSingleByChannel(OutHit, OwnerLocation, OwnerLocation + (UKismetMathLibrary::GetForwardVector(TargetRotation) * MaxObjectDistance), ECC_Visibility);
 
-		AToggleInteractable* PushBox = Cast<AToggleInteractable>(PhysicsHandle->GetGrabbedComponent()->GetOwner());
+		UInteractableComponent* PushBox = Cast<UInteractableComponent>(PhysicsHandle->GetGrabbedComponent()->GetOwner()->FindComponentByClass<UInteractableComponent>());
 		/* Stop pushing if the object is no longer infront of the player */
 		if (OutHit.GetComponent() != PhysicsHandle->GetGrabbedComponent())
 		{
-			PushBox->SetState(GetOwner(), false);
+			PushBox->OnInteract.Broadcast(GetOwner());
 		}
 
 		/* Stop pushing if the object is no longer infront of the player */
@@ -53,7 +53,7 @@ void UPlayerPushComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 		UStaticMeshComponent* BoxMesh = Cast<UStaticMeshComponent>(PhysicsHandle->GetGrabbedComponent());
 		if (BoxMesh && !GetWorld()->LineTraceSingleByChannel(BoxHit, BoxMesh->GetCenterOfMass(), BoxMesh->GetCenterOfMass() + (100.f * FVector(0.f, 0.f, -1.f)), ECC_Visibility))
 		{
-			PushBox->SetState(GetOwner(), false);
+			PushBox->OnInteract.Broadcast(GetOwner());
 		}
 
 		/* Push object away if its too close, fixes slow movement while pushing */

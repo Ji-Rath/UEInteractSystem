@@ -1,8 +1,7 @@
 
 #include "Interaction/AreaInteractComponent.h"
-#include "Interaction/Interactable.h"
 #include "Components/ShapeComponent.h"
-
+#include "Interaction/InteractableComponent.h"
 
 
 void UAreaInteractComponent::HoverInteraction(float DeltaTime)
@@ -16,32 +15,29 @@ void UAreaInteractComponent::HoverInteraction(float DeltaTime)
 	UShapeComponent* ShapeComp = Cast<UShapeComponent>(OverlapVolume.GetComponent(GetOwner()));
 	if (ensure(ShapeComp))
 	{
-		ShapeComp->GetOverlappingActors(OverlappingActors, AInteractable::StaticClass());
-		
-		AInteractable* OverlappedActor = nullptr;
+		TArray<UPrimitiveComponent*> OverlappingPrimitives;
+		ShapeComp->GetOverlappingComponents(OverlappingPrimitives);
+
+		HoverPrimitive = nullptr;
 		if (OverlappingActors.Num() > 0)
 		{
-			OverlappedActor = Cast<AInteractable>(OverlappingActors[0]);
-
-			if (OverlappedActor)
+			/** Return early if there is no change */
+			if (OverlappingPrimitives[0] == HoverPrimitive) { return; }
+			HoverPrimitive = OverlappingPrimitives[0];
+			HoverInteractable = GetInteractComponent(HoverPrimitive);
+		
+			/** Set interact message when hovering over an interactable */
+			if (HoverInteractable && HoverInteractable->CanInteract())
 			{
-				/** Return early if there is no change */
-				if (OverlappedActor == InteractHover) { return; }
-
-				/** Set interact message when hovering over an interactable */
-				if (OverlappedActor->CanInteract(GetOwner()))
-				{
-					InteractHover = OverlappedActor;
-					OnUpdateInteract.Broadcast(true, InteractHover);
-					return;
-				}
+				OnUpdateInteract.Broadcast(true, HoverInteractable);
+				return;
 			}
 		}
 
 		/** Send interaction update when there is no longer an interactable in view */
-		if (InteractHover && OverlappedActor == nullptr)
+		if (HoverInteractable && HoverPrimitive == nullptr)
 		{
-			InteractHover = nullptr;
+			HoverInteractable = nullptr;
 			OnUpdateInteract.Broadcast(false, nullptr);
 		}
 	}

@@ -6,10 +6,10 @@
 #include "Components/ActorComponent.h"
 #include "PlayerInteractComponent.generated.h"
 
-class AInteractable;
+class UInteractableComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateInteract, bool, bInteractable, AInteractable*, Interactable);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerInteract, AInteractable*, Interactable);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateInteract, bool, bInteractable, UInteractableComponent*, Interactable);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerInteract, UInteractableComponent*, Interactable);
 
 /**
  * Allows the player to interact with interactables, executing functionality based on what was interacted with
@@ -29,11 +29,11 @@ public:
 
 	/**
 	 * Called when the player wants to interact with the currently viewed interactable
-	 * @param returns interacted actor
-	 * @return whether the interaction was successful
+	 * @param whether the interaction was successful
+	 * @return interacted actor
 	*/
-	UFUNCTION(BlueprintCallable)	
-	AInteractable* Interact(bool& bSuccess);
+	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")	
+	UInteractableComponent* Interact();
 
 	/**
 	 * BindAction friendly version of Interact()
@@ -43,21 +43,27 @@ public:
 	void InteractAction();
 
 	//Delegate called when there is a change in InteractHover
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Category = "PlayerInteract")
 	FUpdateInteract OnUpdateInteract;
 
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FPlayerInteract OnInteract;
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
+	UInteractableComponent* GetInteractComponent(UPrimitiveComponent* PrimitiveComponent);
 
 protected:
 	UFUNCTION()
 	virtual void HoverInteraction(float DeltaTime);
 	
 	//Store interact actor that the player is currently looking at
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	AInteractable* InteractHover = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PlayerInteract")
+	UInteractableComponent* HoverInteractable = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerInteract")
+	UPrimitiveComponent* HoverPrimitive = nullptr;
 
 	//Distance that the player can interact with objects
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerInteract")
 	float InteractDistance = 500.f;
 };

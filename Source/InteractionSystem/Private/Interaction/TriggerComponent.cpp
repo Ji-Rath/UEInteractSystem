@@ -4,7 +4,8 @@
 #include "Interaction/TriggerComponent.h"
 
 #include "TimerManager.h"
-#include "Interaction/ToggleInteractable.h"
+#include "GameFramework/Actor.h"
+#include "Interaction/ToggleInteractableComponent.h"
 
 // Sets default values for this component's properties
 UTriggerComponent::UTriggerComponent()
@@ -20,9 +21,19 @@ void UTriggerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (AInteractable* Owner = GetOwner<AInteractable>())
+	if (UInteractableComponent* Owner = GetOwner()->FindComponentByClass<UInteractableComponent>())
 	{
-		Owner->OnInteracted.AddDynamic(this, &UTriggerComponent::TriggerActors);
+		Owner->OnInteract.AddDynamic(this, &UTriggerComponent::TriggerActors);
+	}
+}
+
+void UTriggerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	
+	if (UInteractableComponent* Owner = GetOwner()->FindComponentByClass<UInteractableComponent>())
+	{
+		Owner->OnInteract.RemoveDynamic(this, &UTriggerComponent::TriggerActors);
 	}
 }
 
@@ -52,10 +63,24 @@ void UTriggerComponent::TriggerActors(AActor* Instigator)
 
 void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 {
-	for (AInteractable* Interactable : ActorsToTrigger)
+	/** Call trigger function for all actors in array */
+	for (FComponentReference Interactable : InteractablesToTrigger)
 	{
-		/** Call trigger function for all actors in array if they implement the trigger interface */
-		Interactable->Interact(GetOwner());
+		
+		auto* InteractableTrigger = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor));
+		auto* ToggleInteractableTrigger = Cast<UToggleInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor));
+		auto* ToggleInteractable = GetOwner()->FindComponentByClass<UToggleInteractableComponent>();
+		
+		// For toggle interactables, match the state so they are synced together
+		if (ToggleInteractable && ToggleInteractableTrigger)
+		{
+			if (ToggleInteractable->GetState() != ToggleInteractableTrigger->GetState())
+				InteractableTrigger->OnInteract.Broadcast(Instigator);
+		}
+		else
+		{
+			InteractableTrigger->OnInteract.Broadcast(Instigator);
+		}
 	}
 }
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InteractableComponent.h"
 #include "Components/ActorComponent.h"
 #include "TriggerComponent.generated.h"
 
@@ -20,12 +21,14 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:	
 
 	/** TArray of actors to trigger when TriggerActors() function is called */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trigger")
-	TArray<AInteractable*> ActorsToTrigger;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trigger", meta=(AllowAnyActor, AllowedClasses="InteractableComponent"))
+	TArray<FComponentReference> InteractablesToTrigger;
 
 	/** Function to be called to trigger actors in ActorsToTrigger array */
 	UFUNCTION(BlueprintCallable)

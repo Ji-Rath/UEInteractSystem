@@ -4,7 +4,6 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
-#include "Interaction/Interactable.h"
 #include "AdvCharacterMovementComponent.h"
 #include "TimerManager.h"
 
@@ -107,12 +106,12 @@ void UPhysicsGrabComponent::PushComponent(UStaticMeshComponent* GrabMesh)
 	}
 }
 
-void UPhysicsGrabComponent::PushComponent()
+void UPhysicsGrabComponent::PushGrabbedComponent()
 {
 	UStaticMeshComponent* PushMesh = Cast<UStaticMeshComponent>(HandleRef->GetGrabbedComponent());
 	if (PushMesh)
 	{
-		HandleRef->ReleaseComponent();
+		ReleaseComponent();
 		PushComponent(PushMesh);
 	}
 }

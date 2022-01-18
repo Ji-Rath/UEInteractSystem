@@ -1,12 +1,15 @@
 
 #include "Inventory/PlayerEquipComponent.h"
+
+#include "Components/StaticMeshComponent.h"
+#include "GameFramework/Actor.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/PlayerInteractComponent.h"
-#include "Interaction/Interactable.h"
-#include "Inventory/ItemUsable.h"
-#include "Inventory/Pickupable.h"
+#include "Inventory/ItemDataComponent.h"
+#include "Inventory/ItemUsableComponent.h"
+#include "Inventory/PickupableComponent.h"
 
 void UPlayerEquipComponent::BeginPlay()
 {
@@ -61,7 +64,7 @@ void UPlayerEquipComponent::EquipItem(UItemData* Item)
 		TSubclassOf<AActor> ItemClass = Item->ActorClass;
 		if (ensureMsgf(ItemClass, TEXT("%s ItemData does not contain valid class!"), *Item->GetName()))
 		{
-			APickupable* Pickupable = GetWorld()->SpawnActor<APickupable>(ItemClass, GetOwner()->GetTransform());
+			AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemClass, GetOwner()->GetTransform());
 			FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 
 			Pickupable->AttachToComponent(Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner())), TransformRules);
@@ -77,7 +80,10 @@ void UPlayerEquipComponent::EquipItem(UItemData* Item)
 
 void UPlayerEquipComponent::UnequipItem()
 {
-	USceneComponent* ItemAttach = Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner()));
+	UActorComponent* AttachedComp = ItemAttachParent.GetComponent(GetOwner());
+	if (!AttachedComp) { return; }
+	
+	USceneComponent* ItemAttach = Cast<USceneComponent>(AttachedComp);
 	if (ensureMsgf(ItemAttach, TEXT("ItemAttach component is not a scene component!")))
 	{
 		/** Unequip any items that were binded to the actor */
@@ -96,12 +102,16 @@ void UPlayerEquipComponent::UnequipItem()
 UItemData* UPlayerEquipComponent::GetEquippedItemData() const
 {
 	if (EquippedItem)
-		return EquippedItem->GetItemData();
-	else
-		return nullptr;
+	{
+		UItemDataComponent* DataComponent = EquippedItem->FindComponentByClass<UItemDataComponent>();
+		if (DataComponent)
+			return DataComponent->GetItemData();
+	}
+	
+	return nullptr;
 }
 
-APickupable* UPlayerEquipComponent::GetEquippedItem() const
+AActor* UPlayerEquipComponent::GetEquippedItem() const
 {
 	return EquippedItem;
 }
@@ -149,28 +159,32 @@ void UPlayerEquipComponent::UpdateEquip(bool bAdded)
 	}
 }
 
-void UPlayerEquipComponent::ItemInteract(AInteractable* Interactable)
+void UPlayerEquipComponent::ItemInteract(UInteractableComponent* Interactable)
 {
-	APickupable* Item = GetEquippedItem();
+	if (!GetEquippedItem()) { return; }
+	
+	UPickupableComponent* Item = GetEquippedItem()->FindComponentByClass<UPickupableComponent>();
+	UItemDataComponent* ItemDataComponent = GetEquippedItem()->FindComponentByClass<UItemDataComponent>();
 	if (Item)
 	{
-		UItemData* ItemData = Item->GetItemData();
+		UItemData* ItemData = GetEquippedItemData();
 		if (ItemData)
 		{
 			if (Interactable)
 			{
 				/** Attempt to use item on viewed object */
-				if (Interactable->Implements<UItemUsable>())
-					IItemUsable::Execute_OnItemUse(Interactable, GetOwner(), ItemData);
+				if (UItemUsableComponent* ItemUsableComponent = Interactable->GetOwner()->FindComponentByClass<UItemUsableComponent>())
+				{
+					ItemUsableComponent->OnItemUse.Broadcast(GetOwner(), ItemData);
+				}
 			}
 			else
 			{
 				/** Attempt to use the item in hand */
-				Item->OnUseItem(GetOwner());
-				OnItemUse.Broadcast(Item->GetItemData());
+				Item->OnUsePickupable.Broadcast(GetOwner());
+				OnItemUse.Broadcast(ItemDataComponent->GetItemData());
 			}
 		}
 	}
-	
 }
  

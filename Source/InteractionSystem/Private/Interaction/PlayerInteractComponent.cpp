@@ -2,9 +2,11 @@
 
 
 #include "Interaction/PlayerInteractComponent.h"
+
+#include "Components/PrimitiveComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/PlayerController.h"
-#include "Interaction/Interactable.h"
+#include "Interaction/InteractableComponent.h"
 
 
 // Sets default values for this component's properties
@@ -25,6 +27,29 @@ void UPlayerInteractComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 	HoverInteraction(DeltaTime);
 }
 
+UInteractableComponent* UPlayerInteractComponent::GetInteractComponent(UPrimitiveComponent* PrimitiveComponent)
+{
+	if (!PrimitiveComponent) { return nullptr; }
+	
+	UInteractableComponent* InteractableComponent = nullptr;
+	
+	AActor* OwningActor = PrimitiveComponent->GetOwner();
+	TInlineComponentArray<UInteractableComponent*> InteractableComponents(OwningActor);
+	OwningActor->GetComponents(InteractableComponents);
+
+	// Loop through InteractableComponents and find the matching component
+	for(UInteractableComponent* Interactable : InteractableComponents)
+	{
+		if (Interactable->PrimComponent.GetComponent(OwningActor) == PrimitiveComponent)
+		{
+			InteractableComponent = Interactable;
+			break;
+		}
+	}
+
+	return InteractableComponent;
+}
+
 void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
 {
 	/** Ensure that the owner is a pawn */
@@ -40,47 +65,48 @@ void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
 	FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
 
 	bool bHitInteractable = GetWorld()->LineTraceSingleByChannel(Hit, CameraLocation, CameraLocation + Distance, ECC_Visibility, QueryParams);
-	AInteractable* HitActor = Cast<AInteractable>(Hit.GetActor());
+	UInteractableComponent* HitInteractable = GetInteractComponent(Hit.GetComponent());
 
 	/** Return early if there is no change */
-	if (HitActor == InteractHover) { return; }
+	if (Hit.GetComponent() == HoverPrimitive) { return; }
 
-	if (bHitInteractable && HitActor)
+	if (bHitInteractable && HitInteractable)
 	{
 		/** Set interact message when hovering over an interactable */
-		if (HitActor->CanInteract(GetOwner()))
+		if (HitInteractable->CanInteract())
 		{
-			InteractHover = HitActor;
-			OnUpdateInteract.Broadcast(true, InteractHover);
+			HoverInteractable = HitInteractable;
+			HoverPrimitive = Hit.GetComponent();
+			OnUpdateInteract.Broadcast(true, HoverInteractable);
 			return;
 		}
 	}
 	
 	
 	/** Send interaction update when there is no longer an interactable in view */
-	if (InteractHover && !HitActor)
+	if (HoverInteractable && !HitInteractable)
 	{
-		InteractHover = nullptr;
+		HoverInteractable = nullptr;
+		HoverPrimitive = nullptr;
 		OnUpdateInteract.Broadcast(false, nullptr);
 	}
 }
 
-AInteractable* UPlayerInteractComponent::Interact(bool& bSuccess)
+UInteractableComponent* UPlayerInteractComponent::Interact()
 {
-	// Allows functions to use OnInteract without player looking at interactable (ex. using equipped item)
-	OnInteract.Broadcast(InteractHover);
+	// Allows classes to use OnInteract without player looking at interactable (ex. using equipped item)
+	OnInteract.Broadcast(HoverInteractable);
 
-	if (InteractHover)
+	if (HoverInteractable && HoverInteractable->CanInteract())
 	{
 		/** Trigger interacted actor */
-		bSuccess = InteractHover->Interact(GetOwner());
+		HoverInteractable->OnInteract.Broadcast(GetOwner());
 	}
 
-	return InteractHover;
+	return HoverInteractable;
 }
 
 void UPlayerInteractComponent::InteractAction()
 {
-	bool bSuccess;
-	Interact(OUT bSuccess);
+	Interact();
 }
