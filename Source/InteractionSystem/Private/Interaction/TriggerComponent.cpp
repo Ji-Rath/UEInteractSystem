@@ -53,8 +53,9 @@ void UTriggerComponent::TriggerActors(AActor* Instigator)
 		}
 		else
 		{
-			/** Trigger actors instantly if there is no delay set */
-			TimerDel.ExecuteIfBound();
+			/** Trigger actors *instantly* if there is no delay set */
+			if (!GetOwner()->GetWorldTimerManager().IsTimerActive(DelayHandle))
+				GetOwner()->GetWorldTimerManager().SetTimer(DelayHandle, TimerDel, 0.1f, false);
 		}
 
 		TriggerCount++;
@@ -74,6 +75,7 @@ void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 		// For toggle interactables, match the state so they are synced together
 		if (ToggleInteractable && ToggleInteractableTrigger)
 		{
+			// Since the state of the interactable changes before triggering other actors, the condition has to be inverted
 			if (ToggleInteractable->GetState() != ToggleInteractableTrigger->GetState())
 				InteractableTrigger->OnInteract.Broadcast(Instigator);
 		}
