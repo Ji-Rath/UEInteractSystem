@@ -34,7 +34,7 @@ void UItemDataComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-UItemData* UItemDataComponent::GetItemData()
+UItemData* UItemDataComponent::GetItemData() const
 {
 	return ItemData;
 }

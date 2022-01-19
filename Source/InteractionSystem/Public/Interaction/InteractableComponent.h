@@ -41,8 +41,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FComponentReference PrimComponent;
 
-	UFUNCTION(BlueprintCallable)
-	FText GetName();
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	FText GetName() const;
 
 	UPROPERTY(EditAnywhere)
 	FText Name;

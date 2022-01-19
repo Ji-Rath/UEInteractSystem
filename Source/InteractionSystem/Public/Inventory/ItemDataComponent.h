@@ -27,7 +27,7 @@ public:
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	UItemData* GetItemData();
+	UItemData* GetItemData() const;
 
 	UPROPERTY(EditAnywhere)
 	UItemData* ItemData = nullptr;
