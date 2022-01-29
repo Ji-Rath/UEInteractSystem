@@ -38,14 +38,19 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-void UInteractableComponent::SetCanInteract(bool bCanInteract)
+void UInteractableComponent::FinishInteraction(bool bSuccess)
 {
-	bInteractable = bCanInteract;
+	OnFinishInteract.Broadcast(bSuccess);
 }
 
-bool UInteractableComponent::CanInteract_Implementation()
+bool UInteractableComponent::CanInteract() const
 {
-	return bInteractable;
+	return bCanInteract;
+}
+
+void UInteractableComponent::SetCanInteract(bool bNewCanInteract)
+{
+	bCanInteract = bNewCanInteract;
 }
 
 FText UInteractableComponent::GetName() const

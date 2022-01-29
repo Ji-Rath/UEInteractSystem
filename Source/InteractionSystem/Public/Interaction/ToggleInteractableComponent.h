@@ -26,14 +26,32 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	/**
+	 * @brief Set the state of the interactable
+	 * @param Interactor The interactor who set the state of the interactable
+	 * @param bNewState The new state of the interactable
+	 */
 	UFUNCTION(BlueprintCallable)
 	void SetState(AActor* Interactor, bool bNewState);
 
+	/**
+	 * @brief Gets the state of the interactable
+	 * @return The current state of the interactable
+	 */
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool GetState();
+	bool GetState() const;
 
+	/**
+	 * @brief Toggle the state of the interactable
+	 */
 	UFUNCTION(BlueprintCallable)
-	void ToggleState(AActor* Interactor);
+	void ToggleState();
+	
+	/**
+	 * @brief Internal function used when OnFinishInteract is called
+	 * @param bShouldToggle Whether the ToggleInteractable should inverse states
+	 */
+	void ToggleState(bool bShouldToggle);
 
 	bool bIsOn = false;
 };
