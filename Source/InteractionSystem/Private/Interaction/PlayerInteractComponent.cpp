@@ -34,6 +34,8 @@ UInteractableComponent* UPlayerInteractComponent::GetInteractComponent(UPrimitiv
 	UInteractableComponent* InteractableComponent = nullptr;
 	
 	AActor* OwningActor = PrimitiveComponent->GetOwner();
+	if (!OwningActor) { return nullptr; }
+	
 	TInlineComponentArray<UInteractableComponent*> InteractableComponents(OwningActor);
 	OwningActor->GetComponents(InteractableComponents);
 
