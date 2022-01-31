@@ -56,7 +56,7 @@ protected:
 
 public:	
 
-	UPROPERTY()
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FInventoryChange OnInventoryChange;
 
 	/** Drop an item from selected slot */
@@ -92,6 +92,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool AddToInventory(UItemData* Item, const int Count);
 
+	UFUNCTION(BlueprintCallable)
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
 	
 private:
