@@ -21,10 +21,5 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"Plugins": [
-		{
-			"Name": "AdvMovement",
-			"Enabled": true
-		}
-	]
+	"Plugins": []
 }

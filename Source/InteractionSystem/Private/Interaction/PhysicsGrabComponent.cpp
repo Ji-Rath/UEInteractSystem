@@ -4,7 +4,6 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
-#include "AdvCharacterMovementComponent.h"
 #include "TimerManager.h"
 
 // Sets default values for this component's properties
@@ -68,8 +67,7 @@ void UPhysicsGrabComponent::ReleaseComponent()
 	{
 		UPrimitiveComponent* GrabbedComponent = HandleRef->GetGrabbedComponent();
 		APlayerController* PlayerController = Player->GetController<APlayerController>();
-		auto* CharMovement = Player->FindComponentByClass<UAdvCharacterMovementComponent>();
-		if (GrabbedComponent && PlayerController && CharMovement)
+		if (GrabbedComponent && PlayerController)
 		{
 			OnGrabUpdate.Broadcast(false, nullptr);
 			GrabbedComponent->SetCollisionResponseToChannel(ECC_Pawn, PawnResponse);
