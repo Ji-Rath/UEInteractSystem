@@ -41,7 +41,7 @@ void UInventoryComponent::DropItem(const UItemData* Item, const int Count /*= 1*
 	RemoveFromInventory(Item, Count);
 }
 
-void UInventoryComponent::RemoveFromInventory(const UItemData* Item, const int Count /*= 1*/)
+void UInventoryComponent::RemoveFromInventory_Implementation(const UItemData* Item, const int Count /*= 1*/)
 {
 	/** If there is an item at the slot, remove specified amount */
 	int Slot = FindItemSlot(Item);
@@ -78,7 +78,7 @@ UItemData* UInventoryComponent::FindItem(const int Index) const
 	return nullptr;
 }
 
-bool UInventoryComponent::AddToInventory(UItemData* Item, const int Count)
+bool UInventoryComponent::AddToInventory_Implementation(UItemData* Item, const int Count)
 {
 	for (int i=0;i<Inventory.Num();i++)
 	{

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventoryInterface.h"
 #include "Components/ActorComponent.h"
 #include "Interaction/ItemData.h"
 #include "InventoryComponent.generated.h"
@@ -42,7 +43,7 @@ struct FInventoryContents
  * Includes equip/unequip system
  */
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class INTERACTIONSYSTEM_API UInventoryComponent : public UActorComponent
+class INTERACTIONSYSTEM_API UInventoryComponent : public UActorComponent, public IInventoryInterface
 {
 	GENERATED_BODY()
 
@@ -64,8 +65,7 @@ public:
 	void DropItem(const UItemData* Item, const int Count = 1);
 
 	/** Remove an item from current inventory */
-	UFUNCTION(BlueprintCallable)
-	void RemoveFromInventory(const UItemData* Item, const int Count = 1);
+	void RemoveFromInventory_Implementation(const UItemData* Item, const int Count = 1);
 
 	/**
 	 * Find the first slot containing Item
@@ -89,8 +89,7 @@ public:
 	 * @param Count - Amount of item
 	 * @return Whether the item could be added to the inventory
 	*/
-	UFUNCTION(BlueprintCallable)
-	bool AddToInventory(UItemData* Item, const int Count);
+	bool AddToInventory_Implementation(UItemData* Item, const int Count);
 
 	UFUNCTION(BlueprintCallable)
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
