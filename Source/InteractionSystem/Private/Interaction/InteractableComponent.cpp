@@ -5,6 +5,7 @@
 
 #include "GameFramework/Actor.h"
 #include "Interaction/ItemData.h"
+#include "Interaction/PlayerInteractComponent.h"
 #include "Inventory/ItemDataComponent.h"
 
 
@@ -24,8 +25,10 @@ void UInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	// Update last interactor when the interactable is interacted with
+	OnInteract.AddDynamic(this, &UInteractableComponent::SetLastInteractor);
+	OnInteract.AddDynamic(this, &UInteractableComponent::PerformInteractCheck);
+	OnFinishInteract.AddDynamic(this, &UInteractableComponent::DisplayInteractMessage);
 }
 
 
@@ -38,19 +41,53 @@ void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-void UInteractableComponent::FinishInteraction(bool bSuccess)
+void UInteractableComponent::DisplayInteractMessage(bool bSuccess)
 {
-	OnFinishInteract.Broadcast(bSuccess);
+	FText Message = bSuccess ? InteractMessage : CantInteractMessage;
+	SendInteractMessage(Message);
 }
 
-bool UInteractableComponent::CanInteract() const
+bool UInteractableComponent::CanInteract(TSubclassOf<AActor> User)
 {
-	return bCanInteract;
+	for (auto& Elem : InteractFilters)
+	{
+		if (User->StaticClass()->IsChildOf(Elem.Key->StaticClass()))
+		{
+			return Elem.Value;
+		}
+	}
+	return bDefaultInteractable;
 }
 
-void UInteractableComponent::SetCanInteract(bool bNewCanInteract)
+void UInteractableComponent::AddInteractFilter(TSubclassOf<AActor> User, bool bCanInteract)
 {
-	bCanInteract = bNewCanInteract;
+	InteractFilters.Add(User, bCanInteract);
+}
+
+void UInteractableComponent::RemoveInteractFilter(TSubclassOf<AActor> User)
+{
+	InteractFilters.Remove(User);
+}
+
+void UInteractableComponent::ClearInteractFilter()
+{
+	InteractFilters.Empty();
+}
+
+void UInteractableComponent::PerformInteractCheck(AActor* Interactor)
+{
+	bool bCanInteract = CanInteract(Interactor);
+	if (bCanInteract)
+	{
+		OnExecuteInteraction.Broadcast(Interactor);
+	}
+	
+	OnFinishInteract.Broadcast(bCanInteract);
+}
+
+bool UInteractableComponent::CanInteract_Implementation(AActor* User)
+{
+	return CanInteract(User->StaticClass());
 }
 
 FText UInteractableComponent::GetName() const
@@ -70,13 +107,26 @@ FText UInteractableComponent::GetName() const
 	return DisplayName;
 }
 
-FText UInteractableComponent::GetInteractText()
+void UInteractableComponent::SendInteractMessage(AActor* Interactor, FText Message)
 {
-	return InteractText;
+	if (!ensureMsgf(Interactor, TEXT("SendInteractMessage requires a valid Interactor!")))
+	{
+		return;
+	}
+	
+	if (auto* PlayerInteract = Interactor->FindComponentByClass<UPlayerInteractComponent>())
+	{
+		PlayerInteract->OnSendInteractMessage.Broadcast(Message);
+	}
 }
 
-void UInteractableComponent::SetInteractText(FText NewText)
+void UInteractableComponent::SendInteractMessage(FText Message)
 {
-	InteractText = NewText;
+	SendInteractMessage(LastInteractor, Message);
+}
+
+void UInteractableComponent::SetLastInteractor(AActor* Interactor)
+{
+	LastInteractor = Interactor;
 }
 

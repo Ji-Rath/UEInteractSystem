@@ -27,7 +27,7 @@ void UAreaInteractComponent::HoverInteraction(float DeltaTime)
 			HoverInteractable = GetInteractComponent(HoverPrimitive);
 		
 			/** Set interact message when hovering over an interactable */
-			if (HoverInteractable && HoverInteractable->CanInteract())
+			if (HoverInteractable && HoverInteractable->CanInteract(GetOwner()))
 			{
 				OnUpdateInteract.Broadcast(true, HoverInteractable);
 				return;

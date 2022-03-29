@@ -19,8 +19,16 @@ UToggleInteractableComponent::UToggleInteractableComponent()
 void UToggleInteractableComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	if (bAutoManageState)
+	{
+		OnExecuteInteraction.AddDynamic(this, &UToggleInteractableComponent::ToggleState);
+	}
+}
 
-	OnFinishInteract.AddDynamic(this, &UToggleInteractableComponent::ToggleState);
+void UToggleInteractableComponent::SetState(bool bNewState)
+{
+	SetState(GetOwner(), bNewState);
 }
 
 
@@ -37,26 +45,23 @@ void UToggleInteractableComponent::SetState(AActor* Interactor, bool bNewState)
 {
 	if (bIsOn != bNewState)
 	{
-		OnInteract.Broadcast(Interactor);
 		bIsOn = bNewState;
+		OnInteract.Broadcast(Interactor);
 	}
 }
 
-bool UToggleInteractableComponent::GetState() const
+bool UToggleInteractableComponent::GetState()
 {
 	return bIsOn;
 }
 
-void UToggleInteractableComponent::ToggleState()
+void UToggleInteractableComponent::ToggleState(AActor* Interactor)
 {
-	ToggleState(true);
+	bIsOn = !bIsOn;
 }
 
-void UToggleInteractableComponent::ToggleState(bool bShouldToggle)
+void UToggleInteractableComponent::ToggleState()
 {
-	if (bShouldToggle)
-	{
-		bIsOn = !bIsOn;
-	}
+	bIsOn = !bIsOn;
 }
 

@@ -75,7 +75,7 @@ void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
 	if (bHitInteractable && HitInteractable)
 	{
 		/** Set interact message when hovering over an interactable */
-		if (HitInteractable->CanInteract())
+		if (HitInteractable->bPlayerInteract)
 		{
 			HoverInteractable = HitInteractable;
 			HoverPrimitive = Hit.GetComponent();
@@ -99,13 +99,13 @@ UInteractableComponent* UPlayerInteractComponent::Interact()
 	// Allows classes to use OnInteract without player looking at interactable (ex. using equipped item)
 	OnInteract.Broadcast(HoverInteractable);
 
-	if (HoverInteractable && HoverInteractable->CanInteract())
+	if (HoverInteractable)
 	{
 		/** Trigger interacted actor */
 		HoverInteractable->OnInteract.Broadcast(GetOwner());
 	}
 
-	return HoverInteractable;
+	return HoverInteractable; 
 }
 
 void UPlayerInteractComponent::InteractAction()

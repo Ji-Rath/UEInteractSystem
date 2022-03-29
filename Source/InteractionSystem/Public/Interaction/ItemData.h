@@ -24,7 +24,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int MaxStack;
 
-	UPROPERTY(EditAnywhere, meta = (AllowedClasses = "Pickupable"), BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AActor> ActorClass;
 
 	/** Compare classes when comparing ItemData */

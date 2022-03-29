@@ -3,6 +3,8 @@
 
 #include "Inventory/PickupableComponent.h"
 
+#include "TimerManager.h"
+#include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/ItemDataComponent.h"
@@ -24,7 +26,13 @@ void UPickupableComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnInteract.AddDynamic(this, &UPickupableComponent::PickupItem);
+	OnExecuteInteraction.AddDynamic(this, &UPickupableComponent::PickupItem);
+}
+
+void UPickupableComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	GetWorld()->GetTimerManager().ClearTimer(DestroyTimer);
 }
 
 
@@ -40,6 +48,7 @@ void UPickupableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 void UPickupableComponent::PickupItem(AActor* Interactor)
 {
 	if (!ensure(Interactor)) { return; }
+	
 	UInventoryComponent* InventoryRef = Interactor->FindComponentByClass<UInventoryComponent>();
 	UItemDataComponent* ItemData = GetOwner()->FindComponentByClass<UItemDataComponent>();
 
@@ -47,8 +56,19 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	if (InventoryRef && ensureMsgf(ItemData, TEXT("Cannot add item to inventory without ItemData!")))
 	{
 		bool Success = InventoryRef->AddToInventory(ItemData->GetItemData(), Amount);
-		if (Success)
+		GetOwner()->SetActorEnableCollision(false);
+		GetOwner()->SetHidden(true);
+
+		// Delayed destruction is needed to handle async function calls when OnInteract is called
+		FTimerDelegate DestroyDelegate;
+		DestroyDelegate.BindLambda([&]
+		{
+			OnFinishInteract.Broadcast(true);
 			GetOwner()->Destroy();
+		});
+		
+		if (Success)
+			GetWorld()->GetTimerManager().SetTimer(DestroyTimer, DestroyDelegate, 1.f, false);
 	}
 }
 

@@ -7,7 +7,6 @@
 #include "Components/ActorComponent.h"
 #include "ToggleInteractableComponent.generated.h"
 
-
 UCLASS(Blueprintable, ClassGroup=(Interaction), meta=(BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UToggleInteractableComponent : public UInteractableComponent
 {
@@ -26,32 +25,23 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
-	/**
-	 * @brief Set the state of the interactable
-	 * @param Interactor The interactor who set the state of the interactable
-	 * @param bNewState The new state of the interactable
-	 */
 	UFUNCTION(BlueprintCallable)
 	void SetState(AActor* Interactor, bool bNewState);
 
-	/**
-	 * @brief Gets the state of the interactable
-	 * @return The current state of the interactable
-	 */
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool GetState() const;
+	void SetState(bool bNewState);
 
-	/**
-	 * @brief Toggle the state of the interactable
-	 */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	bool GetState();
+
 	UFUNCTION(BlueprintCallable)
 	void ToggleState();
-	
-	/**
-	 * @brief Internal function used when OnFinishInteract is called
-	 * @param bShouldToggle Whether the ToggleInteractable should inverse states
-	 */
-	void ToggleState(bool bShouldToggle);
 
+	void ToggleState(AActor* Interactor);
+
+	UPROPERTY(EditAnywhere)
 	bool bIsOn = false;
+
+	/* Determines whether you want the state of the interactable to change automatically or be manually managed by calling OnFinishInteraction */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bAutoManageState = true;
 };
