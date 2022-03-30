@@ -52,7 +52,7 @@ UInteractableComponent* UPlayerInteractComponent::GetInteractComponent(UPrimitiv
 	return InteractableComponent;
 }
 
-void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
+void UPlayerInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 {
 	/** Ensure that the owner is a pawn */
 	APawn* Player = GetOwner<APawn>();

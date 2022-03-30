@@ -17,6 +17,6 @@ public:
 	TArray<AActor*> OverlappingActors;
 
 protected:
-	void HoverInteraction(float DeltaTime) override;
+	void HoverInteraction_Implementation(float DeltaTime) override;
 
 };

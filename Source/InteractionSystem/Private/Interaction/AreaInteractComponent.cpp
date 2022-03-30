@@ -4,7 +4,7 @@
 #include "Interaction/InteractableComponent.h"
 
 
-void UAreaInteractComponent::HoverInteraction(float DeltaTime)
+void UAreaInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 {
 	/** Ensure that the owner is a pawn */
 	APawn* Player = GetOwner<APawn>();
@@ -17,14 +17,26 @@ void UAreaInteractComponent::HoverInteraction(float DeltaTime)
 	{
 		TArray<UPrimitiveComponent*> OverlappingPrimitives;
 		ShapeComp->GetOverlappingComponents(OverlappingPrimitives);
-
-		HoverPrimitive = nullptr;
+		
 		if (OverlappingActors.Num() > 0)
 		{
 			/** Return early if there is no change */
-			if (OverlappingPrimitives[0] == HoverPrimitive) { return; }
-			HoverPrimitive = OverlappingPrimitives[0];
-			HoverInteractable = GetInteractComponent(HoverPrimitive);
+			OverlappingPrimitives.Sort([this](const UPrimitiveComponent& Prim1, const UPrimitiveComponent& Prim2)
+			{
+				return FVector::Dist(Prim1.GetComponentLocation(), GetOwner()->GetActorLocation()) < FVector::Dist(Prim2.GetComponentLocation(), GetOwner()->GetActorLocation());
+			});
+
+			for(UPrimitiveComponent* PrimComp : OverlappingPrimitives)
+			{
+				if (HoverPrimitive == PrimComp) { return; }
+			
+				if (GetInteractComponent(PrimComp))
+				{
+					HoverPrimitive = PrimComp;
+					HoverInteractable = GetInteractComponent(PrimComp);
+					break;
+				}
+			}
 		
 			/** Set interact message when hovering over an interactable */
 			if (HoverInteractable && HoverInteractable->bPlayerInteract)

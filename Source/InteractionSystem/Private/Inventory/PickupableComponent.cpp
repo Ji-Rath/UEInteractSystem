@@ -56,8 +56,6 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	if (InventoryRef && ensureMsgf(ItemData, TEXT("Cannot add item to inventory without ItemData!")))
 	{
 		bool Success = InventoryRef->AddToInventory(ItemData->GetItemData(), Amount);
-		GetOwner()->SetActorEnableCollision(false);
-		GetOwner()->SetHidden(true);
 
 		// Delayed destruction is needed to handle async function calls when OnInteract is called
 		FTimerDelegate DestroyDelegate;
@@ -68,7 +66,12 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 		});
 		
 		if (Success)
+		{
+			GetOwner()->SetActorEnableCollision(false);
+			GetOwner()->SetActorHiddenInGame(true);
+			AddInteractFilter(Interactor->GetClass(), false);
 			GetWorld()->GetTimerManager().SetTimer(DestroyTimer, DestroyDelegate, 1.f, false);
+		}
 	}
 }
 

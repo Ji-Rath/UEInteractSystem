@@ -57,8 +57,8 @@ public:
 	UInteractableComponent* GetInteractComponent(UPrimitiveComponent* PrimitiveComponent);
 
 protected:
-	UFUNCTION()
-	virtual void HoverInteraction(float DeltaTime);
+	UFUNCTION(BlueprintNativeEvent)
+	void HoverInteraction(float DeltaTime);
 	
 	//Store interact actor that the player is currently looking at
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PlayerInteract")
