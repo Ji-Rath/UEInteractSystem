@@ -5,6 +5,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "TimerManager.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values for this component's properties
 UPhysicsGrabComponent::UPhysicsGrabComponent()
