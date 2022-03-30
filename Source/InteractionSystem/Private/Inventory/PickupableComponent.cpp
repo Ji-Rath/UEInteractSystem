@@ -55,7 +55,7 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	/** Attempt to add the item to the inventory, destroy the item if successful */
 	if (InventoryRef && ensureMsgf(ItemData, TEXT("Cannot add item to inventory without ItemData!")))
 	{
-		bool Success = InventoryRef->AddToInventory(ItemData->GetItemData(), Amount);
+		bool Success = IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData->GetItemData(), Amount);
 
 		// Delayed destruction is needed to handle async function calls when OnInteract is called
 		FTimerDelegate DestroyDelegate;

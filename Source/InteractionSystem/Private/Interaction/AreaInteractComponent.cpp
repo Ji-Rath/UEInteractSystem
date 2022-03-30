@@ -18,7 +18,7 @@ void UAreaInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 		TArray<UPrimitiveComponent*> OverlappingPrimitives;
 		ShapeComp->GetOverlappingComponents(OverlappingPrimitives);
 		
-		if (OverlappingActors.Num() > 0)
+		if (OverlappingPrimitives.Num() > 0)
 		{
 			/** Return early if there is no change */
 			OverlappingPrimitives.Sort([this](const UPrimitiveComponent& Prim1, const UPrimitiveComponent& Prim2)
