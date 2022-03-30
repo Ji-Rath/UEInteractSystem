@@ -138,7 +138,7 @@ void UPlayerEquipComponent::DropEquippedItem()
 			}
 		}
 		/** Remove item from inventory */
-		InventoryCompRef->RemoveFromInventory(GetEquippedItemData(), 1);
+		IInventoryInterface::Execute_RemoveFromInventory(InventoryCompRef, GetEquippedItemData(), 1);
 	}
 }
 
