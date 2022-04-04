@@ -50,12 +50,11 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	if (!ensure(Interactor)) { return; }
 	
 	UInventoryComponent* InventoryRef = Interactor->FindComponentByClass<UInventoryComponent>();
-	UItemDataComponent* ItemData = GetOwner()->FindComponentByClass<UItemDataComponent>();
 
 	/** Attempt to add the item to the inventory, destroy the item if successful */
-	if (InventoryRef && ensureMsgf(ItemData, TEXT("Cannot add item to inventory without ItemData!")))
+	if (InventoryRef)
 	{
-		bool Success = IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData->GetItemData(), Amount);
+		bool Success = IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData, Amount);
 
 		// Delayed destruction is needed to handle async function calls when OnInteract is called
 		FTimerDelegate DestroyDelegate;
@@ -73,5 +72,14 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 			GetWorld()->GetTimerManager().SetTimer(DestroyTimer, DestroyDelegate, 1.f, false);
 		}
 	}
+}
+
+FText UPickupableComponent::GetName() const
+{
+	if (FItemInfo* ItemInfo = ItemData.GetRow<FItemInfo>(""))
+	{
+		return ItemInfo->DisplayName;
+	}
+	return Name;
 }
 

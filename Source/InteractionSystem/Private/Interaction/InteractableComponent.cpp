@@ -94,16 +94,6 @@ FText UInteractableComponent::GetName() const
 {
 	FText DisplayName = Name;
 	
-	// Replace name with itemdata name if component exists
-	if (DisplayName.IsEmpty())
-	{
-		if (const UItemDataComponent* ItemDataComponent = GetOwner()->FindComponentByClass<UItemDataComponent>())
-		{
-			if (const UItemData* ItemData = ItemDataComponent->GetItemData())
-				DisplayName = ItemData->Name;
-		}
-	}
-	
 	return DisplayName;
 }
 

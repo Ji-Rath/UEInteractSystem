@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Engine/DataTable.h"
 #include "Interaction/InteractableComponent.h"
 #include "PickupableComponent.generated.h"
 
@@ -36,8 +37,13 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FUsePickupable OnUsePickupable;
 
-	UPROPERTY(EditAnywhere, Category = "Pickupable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickupable")
 	int Amount = 1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickupable")
+	FDataTableRowHandle ItemData;
+	
 	FTimerHandle DestroyTimer;
+
+	virtual FText GetName() const override;
 };

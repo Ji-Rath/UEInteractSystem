@@ -16,19 +16,19 @@ struct FInventoryContents
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UItemData* ItemData;
+	FDataTableRowHandle ItemData;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int Count;
 
 	FInventoryContents()
 	{
-		ItemData = nullptr;
+		ItemData = FDataTableRowHandle();
 		Count = 0;
 	}
 
-	FInventoryContents(UItemData* Data, int Amount)
+	FInventoryContents(FDataTableRowHandle Item, int Amount)
 	{
-		ItemData = Data;
+		ItemData = Item;
 		Count = Amount;
 	}
 
@@ -62,10 +62,10 @@ public:
 
 	/** Drop an item from selected slot */
 	UFUNCTION(BlueprintCallable)
-	void DropItem(const UItemData* Item, const int Count = 1);
+	void DropItem(FDataTableRowHandle Item, const int Count = 1);
 
 	/** Remove an item from current inventory */
-	void RemoveFromInventory_Implementation(const UItemData* Item, const int Count = 1);
+	void RemoveFromInventory_Implementation(const FDataTableRowHandle Item, const int Count = 1);
 
 	/**
 	 * Find the first slot containing Item
@@ -73,7 +73,7 @@ public:
 	 * @return Slot with containing item
 	*/
 	UFUNCTION(BlueprintCallable)
-	int FindItemSlot(const UItemData* Item) const;
+	int FindItemSlot(FDataTableRowHandle Item) const;
 
 	/**
 	 * Find the first slot containing Item
@@ -81,7 +81,7 @@ public:
 	 * @return Slot with containing item
 	*/
 	UFUNCTION(BlueprintCallable)
-	UItemData* FindItem(const int Index) const;
+	FDataTableRowHandle FindItem(const int Index) const;
 
 	/**
 	 * Attempt to add an item to the inventory
@@ -89,7 +89,7 @@ public:
 	 * @param Count - Amount of item
 	 * @return Whether the item could be added to the inventory
 	*/
-	bool AddToInventory_Implementation(UItemData* Item, const int Count);
+	bool AddToInventory_Implementation(FDataTableRowHandle Item, const int Count);
 
 	UFUNCTION(BlueprintCallable)
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;

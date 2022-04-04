@@ -3,6 +3,7 @@
 
 #include "Inventory/InventoryComponent.h"
 
+#include "InteractionSystem_Settings.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Inventory/PickupableComponent.h"
@@ -29,19 +30,19 @@ void UInventoryComponent::BeginPlay()
 	
 }
 
-void UInventoryComponent::DropItem(const UItemData* Item, const int Count /*= 1*/)
+void UInventoryComponent::DropItem(FDataTableRowHandle Item, const int Count /*= 1*/)
 {
 	APawn* Player = GetOwner<APawn>();
 	FActorSpawnParameters SpawnParams = FActorSpawnParameters();
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	AActor* DroppedItem = GetWorld()->SpawnActor<AActor>(Item->ActorClass, GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
+	AActor* DroppedItem = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
 
 	DroppedItem->FindComponentByClass<UPickupableComponent>()->Amount = Count;
 
 	RemoveFromInventory(Item, Count);
 }
 
-void UInventoryComponent::RemoveFromInventory_Implementation(const UItemData* Item, const int Count /*= 1*/)
+void UInventoryComponent::RemoveFromInventory_Implementation(const FDataTableRowHandle Item, const int Count /*= 1*/)
 {
 	/** If there is an item at the slot, remove specified amount */
 	int Slot = FindItemSlot(Item);
@@ -52,9 +53,13 @@ void UInventoryComponent::RemoveFromInventory_Implementation(const UItemData* It
 			Inventory.RemoveAt(Slot);
 		OnInventoryChange.Broadcast(false);
 	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Unable to remove item %s from inventory!"), *(Item.RowName.ToString()));
+	}
 }
 
-int UInventoryComponent::FindItemSlot(const UItemData* Item) const
+int UInventoryComponent::FindItemSlot(FDataTableRowHandle Item) const
 {
 	/** Find slot with item in it */
 	for (int i = 0; i < Inventory.Num(); i++)
@@ -68,26 +73,27 @@ int UInventoryComponent::FindItemSlot(const UItemData* Item) const
 	return -1;
 }
 
-UItemData* UInventoryComponent::FindItem(const int Index) const
+FDataTableRowHandle UInventoryComponent::FindItem(const int Index) const
 {
 	if (Inventory.IsValidIndex(Index))
 	{
 		return Inventory[Index].ItemData;
 	}
 
-	return nullptr;
+	return FDataTableRowHandle();
 }
 
-bool UInventoryComponent::AddToInventory_Implementation(UItemData* Item, const int Count)
+bool UInventoryComponent::AddToInventory_Implementation(FDataTableRowHandle Item, const int Count)
 {
 	for (int i=0;i<Inventory.Num();i++)
 	{
 		FInventoryContents& InventoryContent = Inventory[i];
+		FItemInfo* ItemInfo = Item.GetRow<FItemInfo>("");
 		/** Compare names to see if they are the same item */
 		if (InventoryContent.ItemData == Item)
 		{
 			/** Ensure that adding the item will not exceed the max stack */
-			if (InventoryContent.Count + Count <= InventoryContent.ItemData->MaxStack)
+			if (ItemInfo->CanStack(InventoryContent.Count + Count))
 			{
 				InventoryContent.Count += Count;
 				OnInventoryChange.Broadcast(true);

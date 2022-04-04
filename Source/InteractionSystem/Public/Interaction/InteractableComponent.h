@@ -66,7 +66,7 @@ public:
 	FComponentReference PrimComponent;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FText GetName() const;
+	virtual FText GetName() const;
 
 	UPROPERTY(EditAnywhere)
 	FText Name;

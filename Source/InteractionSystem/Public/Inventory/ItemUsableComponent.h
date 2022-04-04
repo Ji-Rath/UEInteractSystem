@@ -8,7 +8,7 @@
 
 class UItemData;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemUse, AActor*, User, UItemData*, ItemData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemUse, AActor*, User, FDataTableRowHandle, ItemData);
 
 UCLASS(Blueprintable, ClassGroup=("Interactable|Inventory"), meta=(BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UItemUsableComponent : public UActorComponent
