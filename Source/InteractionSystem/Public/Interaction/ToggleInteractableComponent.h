@@ -38,7 +38,7 @@ public:
 
 	void ToggleState(AActor* Interactor);
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	bool bIsOn = false;
 
 	/* Determines whether you want the state of the interactable to change automatically or be manually managed by calling OnFinishInteraction */

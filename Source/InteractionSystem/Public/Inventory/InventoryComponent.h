@@ -95,7 +95,7 @@ public:
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
 	
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, SaveGame)
 	TArray<FInventoryContents> Inventory;
 
 	UPROPERTY(EditDefaultsOnly)

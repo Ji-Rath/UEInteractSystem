@@ -46,4 +46,5 @@ public:
 	FTimerHandle DestroyTimer;
 
 	virtual FText GetName() const override;
+
 };
