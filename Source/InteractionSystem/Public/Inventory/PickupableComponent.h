@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventoryComponent.h"
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
 #include "Interaction/InteractableComponent.h"
@@ -38,10 +39,7 @@ public:
 	FUsePickupable OnUsePickupable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickupable")
-	int Amount = 1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickupable")
-	FDataTableRowHandle ItemData;
+	FInventoryContents ItemData;
 	
 	FTimerHandle DestroyTimer;
 

@@ -17,6 +17,7 @@ UPickupableComponent::UPickupableComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	ItemData.Count = 1;
 	// ...
 }
 
@@ -54,7 +55,7 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	/** Attempt to add the item to the inventory, destroy the item if successful */
 	if (InventoryRef)
 	{
-		bool Success = IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData, Amount);
+		bool Success = IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData);
 
 		// Delayed destruction is needed to handle async function calls when OnInteract is called
 		FTimerDelegate DestroyDelegate;

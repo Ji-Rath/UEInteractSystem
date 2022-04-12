@@ -46,7 +46,7 @@ public:
 	void PerformInteractCheck(AActor* Interactor);
 
 	/* Filters used to determine whether an actor can interact with this object */
-	UPROPERTY(EditAnywhere, SaveGame, Category = "Interactable")
+	UPROPERTY(EditAnywhere, Category = "Interactable")
 	TMap<TSubclassOf<AActor>, bool> InteractFilters;
 
 	/* Called when the interactable component is interacted with */

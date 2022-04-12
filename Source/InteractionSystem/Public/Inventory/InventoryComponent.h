@@ -34,10 +34,10 @@ public:
 
 	/** Drop an item from selected slot */
 	UFUNCTION(BlueprintCallable)
-	void DropItem(FDataTableRowHandle Item, const int Count = 1);
+	void DropItem(const FInventoryContents& Item);
 
 	/** Remove an item from current inventory */
-	void RemoveFromInventory_Implementation(const FDataTableRowHandle Item, const int Count = 1);
+	virtual void RemoveFromInventory_Implementation(const FInventoryContents& Item) override;
 
 	/**
 	 * Find the first slot containing Item
@@ -45,7 +45,7 @@ public:
 	 * @return Slot with containing item
 	*/
 	UFUNCTION(BlueprintCallable)
-	int FindItemSlot(FDataTableRowHandle Item) const;
+	int FindItemSlot(const FInventoryContents& Item) const;
 
 	/**
 	 * Find the first slot containing Item
@@ -53,7 +53,7 @@ public:
 	 * @return Slot with containing item
 	*/
 	UFUNCTION(BlueprintCallable)
-	FDataTableRowHandle FindItem(const int Index) const;
+	FInventoryContents FindItem(const int Index) const;
 
 	/**
 	 * Attempt to add an item to the inventory
@@ -61,15 +61,23 @@ public:
 	 * @param Count - Amount of item
 	 * @return Whether the item could be added to the inventory
 	*/
-	bool AddToInventory_Implementation(FDataTableRowHandle Item, const int Count);
+	virtual bool AddToInventory_Implementation(const FInventoryContents& Item) override;
 
 	UFUNCTION(BlueprintCallable)
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
+
+	void SetInventory(const TArray<FInventoryContents>& NewInventory);
 	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> ItemBaseClass;
+
 private:
-	UPROPERTY(EditAnywhere, SaveGame)
+	UPROPERTY(EditAnywhere)
 	TArray<FInventoryContents> Inventory;
 
 	UPROPERTY(EditDefaultsOnly)
 	int InventorySize;
+
+	UPROPERTY(EditAnywhere)
+	UDataTable* FallbackTable = nullptr;
 };

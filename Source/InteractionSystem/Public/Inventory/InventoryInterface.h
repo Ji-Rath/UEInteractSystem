@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "UObject/Interface.h"
+#include "InventoryInfo.h"
 #include "InventoryInterface.generated.h"
 
-class UItemData;
 // This class does not need to be modified.
-UINTERFACE()
+UINTERFACE(Blueprintable, BlueprintType)
 class UInventoryInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -26,7 +26,7 @@ class INTERACTIONSYSTEM_API IInventoryInterface
 public:
 	/** Remove an item from current inventory */
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	void RemoveFromInventory(const FDataTableRowHandle Item, const int Count = 1);
+	void RemoveFromInventory(const FInventoryContents& Item);
 
 	/**
 	 * Attempt to add an item to the inventory
@@ -35,7 +35,7 @@ public:
 	 * @return Whether the item could be added to the inventory
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool AddToInventory(FDataTableRowHandle Item, const int Count);
+	bool AddToInventory(const FInventoryContents& Item);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	bool DoesItemExist(FDataTableRowHandle Item);

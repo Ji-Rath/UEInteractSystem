@@ -10,7 +10,7 @@ class AInteractable;
 class APickupable;
 class UItemData;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, FDataTableRowHandle, ItemData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, FInventoryContents, ItemData);
 
 UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
@@ -28,14 +28,14 @@ public:
 
 	/** Equip the item that is in the slot */
 	UFUNCTION(BlueprintCallable)
-	void EquipItem(FDataTableRowHandle Item);
+	void EquipItem(const FInventoryContents& Item);
 
 	/** Unequip any currently equipped items */
 	UFUNCTION(BlueprintCallable)
 	void UnequipItem();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
-	FDataTableRowHandle GetEquippedItemData() const;
+	FInventoryContents GetEquippedItemData() const;
 
 	FItemInfo GetEquippedItemInfo() const;
 
@@ -48,7 +48,7 @@ public:
 	UPROPERTY()
 	FUseItem OnItemUse;
 	
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, SaveGame)
 	AActor* EquippedActor;
 
 private:
@@ -56,7 +56,7 @@ private:
 	FComponentReference ItemAttachParent;
 
 	UPROPERTY()
-	FDataTableRowHandle EquippedItem;
+	FInventoryContents EquippedItem;
 
 	/** Starting offset for equipping an item */
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")

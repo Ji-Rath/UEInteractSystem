@@ -48,7 +48,7 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/** Interp equipped item to move smoothly into view */
-	if (!GetEquippedItemData().RowName.IsNone() && ItemAttachSpring)
+	if (!GetEquippedItemData().IsNull() && ItemAttachSpring)
 	{
 		const float CurrentOffset = ItemAttachSpring->TargetOffset.Z;
 		if (!FMath::IsNearlyEqual(CurrentOffset, InitialSpringArmOffset))
@@ -56,35 +56,40 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	}
 }
 
-void UPlayerEquipComponent::EquipItem(FDataTableRowHandle Item)
+void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 {
+	if (!ensure(InventoryCompRef->ItemBaseClass)) { return; }
 	UnequipItem();
 
 	/** Spawn item and attach it to the player */
-	AStaticMeshActor* Pickupable = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), GetOwner()->GetTransform());
+	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(InventoryCompRef->ItemBaseClass, GetOwner()->GetTransform());
 	FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
-
-	Pickupable->SetMobility(EComponentMobility::Movable);
+	
 	Pickupable->AttachToComponent(Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner())), TransformRules);
 	Pickupable->SetActorEnableCollision(false);
-	UPickupableComponent* PickupableComp = NewObject<UPickupableComponent>(Pickupable, UPickupableComponent::StaticClass());
-	PickupableComp->RegisterComponent();
-	Pickupable->AddInstanceComponent(PickupableComp); 
+	//UPickupableComponent* PickupableComp = NewObject<UPickupableComponent>(Pickupable, UPickupableComponent::StaticClass());
+	//PickupableComp->RegisterComponent();
+	//Pickupable->AddInstanceComponent(PickupableComp); 
 	
-	PickupableComp->ItemData = Item;
+	//PickupableComp->ItemData = Item;
 	
 
 	EquippedItem = Item;
 	EquippedActor = Pickupable;
 	
-	if (auto* Mesh = Pickupable->GetStaticMeshComponent())
+	if (auto* Mesh = Pickupable->FindComponentByClass<UStaticMeshComponent>())
 	{
 		Mesh->SetSimulatePhysics(false);
 		if (!GetEquippedItemData().IsNull())
 		{
 			Mesh->SetStaticMesh(GetEquippedItemInfo().ItemMesh.Get());
 		}
-		
+	}
+
+	if (UPickupableComponent* PickupComp = Pickupable->FindComponentByClass<UPickupableComponent>())
+	{
+		PickupComp->ItemData = Item;
+		PickupComp->bPlayerInteract = false;
 	}
 	
 	if (ItemAttachSpring)
@@ -112,7 +117,7 @@ void UPlayerEquipComponent::UnequipItem()
 	}
 }
 
-FDataTableRowHandle UPlayerEquipComponent::GetEquippedItemData() const
+FInventoryContents UPlayerEquipComponent::GetEquippedItemData() const
 {
 	return EquippedItem;
 }
@@ -152,12 +157,17 @@ void UPlayerEquipComponent::DropEquippedItem()
 				Mesh->SetSimulatePhysics(true);
 				Mesh->AddImpulse(ForwardVector * ThrowImpulse);
 			}
+
+			if (UPickupableComponent* Pickupable = Item->FindComponentByClass<UPickupableComponent>())
+			{
+				Pickupable->bPlayerInteract = true;
+			}
 		}
 		
 		/** Remove item from inventory */
-		IInventoryInterface::Execute_RemoveFromInventory(InventoryCompRef, GetEquippedItemData(), 1);
+		IInventoryInterface::Execute_RemoveFromInventory(InventoryCompRef, GetEquippedItemData());
 
-		EquippedItem = FDataTableRowHandle();
+		EquippedItem = FInventoryContents();
 		EquippedActor = nullptr;
 	}
 }
@@ -168,8 +178,8 @@ void UPlayerEquipComponent::UpdateEquip(bool bAdded)
 	if (bAdded)
 	{
 		/** Equip the item that was just picked up if the player is empty handed */
-		if (EquippedItem.IsNull())
-			EquipItem(Inventory[Inventory.Num()-1].ItemData);
+		if (EquippedItem.IsNull() && Inventory.Num() > 0)
+			EquipItem(Inventory[Inventory.Num()-1]);
 	}
 	else
 	{
