@@ -10,34 +10,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChange, bool, bAdded);
 
-USTRUCT(Blueprintable)
-struct FInventoryContents
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FDataTableRowHandle ItemData;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int Count;
-
-	FInventoryContents()
-	{
-		ItemData = FDataTableRowHandle();
-		Count = 0;
-	}
-
-	FInventoryContents(FDataTableRowHandle Item, int Amount)
-	{
-		ItemData = Item;
-		Count = Amount;
-	}
-
-	bool operator==(const FInventoryContents& OtherSlot) const
-	{
-		return ItemData == OtherSlot.ItemData;
-	}
-};
-
 /**
  * Inventory system that stores inventory values and allows manipulation of contents
  * Includes equip/unequip system
