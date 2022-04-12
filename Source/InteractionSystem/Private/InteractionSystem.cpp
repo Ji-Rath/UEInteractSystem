@@ -13,7 +13,7 @@ void FInteractionSystemModule::StartupModule()
 	if(ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings"))
 	{
 		SettingsModule->RegisterSettings("Project", "Plugins", "InteractionSystem_Settings",
-			LOCTEXT("RuntimeSettingsName", "My Setting Page"), LOCTEXT("RuntimeSettingsDescription", "Configure my setting"),
+			LOCTEXT("RuntimeSettingsName", "Interaction System"), LOCTEXT("RuntimeSettingsDescription", "Configure my setting"),
 			GetMutableDefault<UInteractionSystem_Settings>());
 	}
 }
