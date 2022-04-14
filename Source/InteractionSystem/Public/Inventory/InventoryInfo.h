@@ -56,7 +56,14 @@ struct FInventoryContents
 	
 	bool operator==(const FInventoryContents& OtherSlot) const
 	{
-		return RowName == OtherSlot.RowName;
+		const FName Name = GetRowName();
+		const FName OtherName = OtherSlot.GetRowName();
+		return Name == OtherName;
+	}
+
+	FName GetRowName() const
+	{
+		return RowName.IsNone() ? RowHandle.RowName : RowName;
 	}
 	
 	friend FArchive& operator<<(FArchive& Ar, FInventoryContents& objToSerialize) {

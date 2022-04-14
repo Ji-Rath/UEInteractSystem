@@ -81,7 +81,7 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 	if (auto* Mesh = Pickupable->FindComponentByClass<UStaticMeshComponent>())
 	{
 		Mesh->SetSimulatePhysics(false);
-		if (!GetEquippedItemData().IsNull())
+		if (!GetEquippedItemData().IsNull() && !GetEquippedItemData().GetRow<FItemInfo>("")->bCustomClass)
 		{
 			Mesh->SetStaticMesh(GetEquippedItemInfo().ItemMesh.Get());
 		}

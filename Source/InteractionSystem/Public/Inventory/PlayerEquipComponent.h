@@ -10,7 +10,7 @@ class AInteractable;
 class APickupable;
 class UItemData;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, FInventoryContents, ItemData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, const FInventoryContents&, ItemData);
 
 UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
