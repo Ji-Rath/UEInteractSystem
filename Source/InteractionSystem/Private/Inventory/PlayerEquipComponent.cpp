@@ -60,19 +60,20 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 {
 	if (!ensure(InventoryCompRef->ItemBaseClass)) { return; }
 	UnequipItem();
-
+	
+	// Update custom class if needed
+	TSubclassOf<AActor> ItemBaseClass = InventoryCompRef->ItemBaseClass;
+	if (FItemInfo* ItemInfo = Item.GetRow<FItemInfo>(""))
+	{
+		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
+	}
+	
 	/** Spawn item and attach it to the player */
-	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(InventoryCompRef->ItemBaseClass, GetOwner()->GetTransform());
+	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, GetOwner()->GetTransform());
 	FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 	
 	Pickupable->AttachToComponent(Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner())), TransformRules);
 	Pickupable->SetActorEnableCollision(false);
-	//UPickupableComponent* PickupableComp = NewObject<UPickupableComponent>(Pickupable, UPickupableComponent::StaticClass());
-	//PickupableComp->RegisterComponent();
-	//Pickupable->AddInstanceComponent(PickupableComp); 
-	
-	//PickupableComp->ItemData = Item;
-	
 
 	EquippedItem = Item;
 	EquippedActor = Pickupable;

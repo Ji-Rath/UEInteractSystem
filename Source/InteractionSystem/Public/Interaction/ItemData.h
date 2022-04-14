@@ -78,25 +78,31 @@ public:
 
 	/** The 'Name' column is the same as the XP Level */
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Info)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	FText DisplayName;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Info)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	FText Description;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Info)
-	TSoftObjectPtr<UStaticMesh> ItemMesh;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Data)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	EStackableType StackableType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Data)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
+	bool bCustomClass = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	EItemType ItemType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh", meta=(EditCondition="bCustomClass == true", EditConditionHides))
+	TSubclassOf<AActor> CustomClass;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Data, meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh", meta=(EditCondition="bCustomClass == false", EditConditionHides))
+	TSoftObjectPtr<UStaticMesh> ItemMesh;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
 	int32 MaxStack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Data, meta=(EditCondition="ItemType == EItemType::Readable", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="ItemType == EItemType::Readable", EditConditionHides))
 	TArray<FText> PageData;
 	
 	bool CanStack(int Count) const

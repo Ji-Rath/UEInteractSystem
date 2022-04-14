@@ -67,7 +67,8 @@ public:
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
 
 	void SetInventory(const TArray<FInventoryContents>& NewInventory);
-	
+
+	// Base class of pickupable when no custom class is given
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AActor> ItemBaseClass;
 
