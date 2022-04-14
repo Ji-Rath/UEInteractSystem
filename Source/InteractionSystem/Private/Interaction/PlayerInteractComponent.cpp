@@ -69,6 +69,15 @@ void UPlayerInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 	bool bHitInteractable = GetWorld()->LineTraceSingleByChannel(Hit, CameraLocation, CameraLocation + Distance, ECC_Visibility, QueryParams);
 	UInteractableComponent* HitInteractable = GetInteractComponent(Hit.GetComponent());
 
+	// Invalidate currently viewed interactable if bPlayerInteract turns false
+	if (HitInteractable && HoverPrimitive && !HitInteractable->bPlayerInteract)
+	{
+		HoverInteractable = nullptr;
+		HoverPrimitive = nullptr;
+		OnUpdateInteract.Broadcast(false, nullptr);
+		return;
+	}
+	
 	/** Return early if there is no change */
 	if (Hit.GetComponent() == HoverPrimitive) { return; }
 
