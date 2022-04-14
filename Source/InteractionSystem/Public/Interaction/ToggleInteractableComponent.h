@@ -36,6 +36,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ToggleState();
 
+	void ShouldToggleState(bool bShouldToggle);
+
 	void ToggleState(AActor* Interactor);
 
 	UPROPERTY(EditAnywhere, SaveGame)
