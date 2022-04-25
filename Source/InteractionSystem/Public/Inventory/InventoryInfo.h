@@ -11,8 +11,8 @@ struct FInventoryContents
 {
 	GENERATED_USTRUCT_BODY()
 
-	// Used to easily get data table row in editor
-	UPROPERTY(EditAnywhere)
+	// Used to easily get data table row in editor. Is not reliable to give accurate info when playing in-game
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FDataTableRowHandle RowHandle;
 
 	// Primarily used for serialization, should be identical to RowHandle RowName
@@ -34,11 +34,13 @@ struct FInventoryContents
 
 	FInventoryContents(FDataTableRowHandle Item, int Amount)
 	{
+		RowHandle = Item;
 		Count = Amount;
 	}
 
 	FInventoryContents(FDataTableRowHandle Item)
 	{
+		RowHandle = Item;
 		Count = 1;
 	}
 
