@@ -34,6 +34,8 @@ void UPlayerEquipComponent::BeginPlay()
 	{
 		InteractComp->OnInteract.AddDynamic(this, &UPlayerEquipComponent::ItemInteract);
 	}
+
+	OriginalSocketOffset = ItemAttachSpring->SocketOffset;
 }
 
 UPlayerEquipComponent::UPlayerEquipComponent()
@@ -94,7 +96,17 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 	}
 	
 	if (ItemAttachSpring)
+	{
+		ItemAttachSpring->SocketOffset = OriginalSocketOffset;
+		
+		if (FItemInfo* ItemInfo = Item.GetRow<FItemInfo>(""))
+		{
+			ItemAttachSpring->SocketOffset += ItemInfo->ItemOffset;
+		}
+		
 		ItemAttachSpring->TargetOffset.Z = ItemUnequipOffset;
+	}
+		
 }
 
 void UPlayerEquipComponent::UnequipItem()

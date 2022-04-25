@@ -90,5 +90,8 @@ private:
 	UFUNCTION()
 	void ItemInteract(UInteractableComponent* Interactable);
 
+	UPROPERTY()
+	FVector OriginalSocketOffset;
+
 };
 
