@@ -46,15 +46,20 @@ public:
 UENUM()
 enum class EStackableType
 {
+	// The item cannot be stacked
 	NoStacking,
+	// The item can be stacked up to the MaxStack value
 	Stackable,
+	// The item can be infinitely stacked
 	InfiniteStack
 };
 
 UENUM()
 enum class EItemType
 {
+	// The item is a simple pickupable
 	Item,
+	// The item is meant to be read from the world
 	Readable
 };
 
@@ -75,35 +80,46 @@ public:
 		ItemMesh = nullptr;
 		ItemType = EItemType::Item;
 	}
-
-	/** The 'Name' column is the same as the XP Level */
-
+	
+	// The display name of the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	FText DisplayName;
-	
+
+	// The description of the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	FText Description;
-	
+
+	// Determines how the item will stack when there is more than 1 in an inventory
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	EStackableType StackableType;
 
+	// Whether the item uses a custom class or not
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	bool bCustomClass = false;
 
+	// The type of item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	EItemType ItemType;
 
+	// The custom actor used for the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh", meta=(EditCondition="bCustomClass == true", EditConditionHides))
 	TSubclassOf<AActor> CustomClass;
-	
+
+	// The mesh used for the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh", meta=(EditCondition="bCustomClass == false", EditConditionHides))
 	TSoftObjectPtr<UStaticMesh> ItemMesh;
-	
+
+	// The max stack possible for the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
 	int32 MaxStack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="ItemType == EItemType::Readable", EditConditionHides))
+	// Page information, each array element signifies a page
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="ItemType == EItemType::Readable", EditConditionHides, MultiLine="true"))
 	TArray<FText> PageData;
+
+	// Arbitrary vector value, used in the interaction system to align equipped items so they fit the screen properly
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Optional")
+	FVector ItemOffset;
 	
 	bool CanStack(int Count) const
 	{
