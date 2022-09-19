@@ -37,5 +37,5 @@ public:
 	bool AddToInventory(UItemData* Item, const int Count);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	bool DoesItemExist(UItemData* Item);
+	bool DoesItemExist(UItemData* Item, int& OutIndex);
 };
