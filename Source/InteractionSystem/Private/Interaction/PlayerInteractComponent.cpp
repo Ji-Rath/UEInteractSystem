@@ -52,7 +52,7 @@ UInteractableComponent* UPlayerInteractComponent::GetInteractComponent(UPrimitiv
 	return InteractableComponent;
 }
 
-void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
+void UPlayerInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 {
 	/** Ensure that the owner is a pawn */
 	APawn* Player = GetOwner<APawn>();
@@ -69,13 +69,22 @@ void UPlayerInteractComponent::HoverInteraction(float DeltaTime)
 	bool bHitInteractable = GetWorld()->LineTraceSingleByChannel(Hit, CameraLocation, CameraLocation + Distance, ECC_Visibility, QueryParams);
 	UInteractableComponent* HitInteractable = GetInteractComponent(Hit.GetComponent());
 
+	// Invalidate currently viewed interactable if bPlayerInteract turns false
+	if (HitInteractable && HoverPrimitive && !HitInteractable->bPlayerInteract)
+	{
+		HoverInteractable = nullptr;
+		HoverPrimitive = nullptr;
+		OnUpdateInteract.Broadcast(false, nullptr);
+		return;
+	}
+	
 	/** Return early if there is no change */
 	if (Hit.GetComponent() == HoverPrimitive) { return; }
 
 	if (bHitInteractable && HitInteractable)
 	{
 		/** Set interact message when hovering over an interactable */
-		if (HitInteractable->CanInteract())
+		if (HitInteractable->bPlayerInteract)
 		{
 			HoverInteractable = HitInteractable;
 			HoverPrimitive = Hit.GetComponent();
@@ -99,13 +108,13 @@ UInteractableComponent* UPlayerInteractComponent::Interact()
 	// Allows classes to use OnInteract without player looking at interactable (ex. using equipped item)
 	OnInteract.Broadcast(HoverInteractable);
 
-	if (HoverInteractable && HoverInteractable->CanInteract())
+	if (HoverInteractable)
 	{
 		/** Trigger interacted actor */
 		HoverInteractable->OnInteract.Broadcast(GetOwner());
 	}
 
-	return HoverInteractable;
+	return HoverInteractable; 
 }
 
 void UPlayerInteractComponent::InteractAction()

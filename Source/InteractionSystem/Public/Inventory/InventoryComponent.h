@@ -10,34 +10,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChange, bool, bAdded);
 
-USTRUCT(Blueprintable)
-struct FInventoryContents
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UItemData* ItemData;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int Count;
-
-	FInventoryContents()
-	{
-		ItemData = nullptr;
-		Count = 0;
-	}
-
-	FInventoryContents(UItemData* Data, int Amount)
-	{
-		ItemData = Data;
-		Count = Amount;
-	}
-
-	bool operator==(const FInventoryContents& OtherSlot) const
-	{
-		return ItemData == OtherSlot.ItemData;
-	}
-};
-
 /**
  * Inventory system that stores inventory values and allows manipulation of contents
  * Includes equip/unequip system
@@ -62,10 +34,10 @@ public:
 
 	/** Drop an item from selected slot */
 	UFUNCTION(BlueprintCallable)
-	void DropItem(const UItemData* Item, const int Count = 1);
+	void DropItem(const FInventoryContents& Item);
 
 	/** Remove an item from current inventory */
-	void RemoveFromInventory_Implementation(const UItemData* Item, const int Count = 1);
+	virtual void RemoveFromInventory_Implementation(const FInventoryContents& Item) override;
 
 	/**
 	 * Find the first slot containing Item
@@ -73,7 +45,7 @@ public:
 	 * @return Slot with containing item
 	*/
 	UFUNCTION(BlueprintCallable)
-	int FindItemSlot(const UItemData* Item) const;
+	int FindItemSlot(const FInventoryContents& Item) const;
 
 	/**
 	 * Find the first slot containing Item
@@ -81,7 +53,7 @@ public:
 	 * @return Slot with containing item
 	*/
 	UFUNCTION(BlueprintCallable)
-	UItemData* FindItem(const int Index) const;
+	FInventoryContents FindItem(const int Index) const;
 
 	/**
 	 * Attempt to add an item to the inventory
@@ -89,15 +61,24 @@ public:
 	 * @param Count - Amount of item
 	 * @return Whether the item could be added to the inventory
 	*/
-	bool AddToInventory_Implementation(UItemData* Item, const int Count);
+	virtual bool AddToInventory_Implementation(const FInventoryContents& Item) override;
 
 	UFUNCTION(BlueprintCallable)
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
-	
+
+	void SetInventory(const TArray<FInventoryContents>& NewInventory);
+
+	// Base class of pickupable when no custom class is given
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> ItemBaseClass;
+
 private:
 	UPROPERTY(EditAnywhere)
 	TArray<FInventoryContents> Inventory;
 
 	UPROPERTY(EditDefaultsOnly)
 	int InventorySize;
+
+	UPROPERTY(EditAnywhere)
+	UDataTable* FallbackTable = nullptr;
 };

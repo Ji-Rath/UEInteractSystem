@@ -8,6 +8,7 @@
 
 class UInteractableComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSendInteractMessage, FText, InteractMessage);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUpdateInteract, bool, bInteractable, UInteractableComponent*, Interactable);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerInteract, UInteractableComponent*, Interactable);
 
@@ -49,12 +50,15 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FPlayerInteract OnInteract;
 
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FSendInteractMessage OnSendInteractMessage;
+
 	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
 	UInteractableComponent* GetInteractComponent(UPrimitiveComponent* PrimitiveComponent);
 
 protected:
-	UFUNCTION()
-	virtual void HoverInteraction(float DeltaTime);
+	UFUNCTION(BlueprintNativeEvent)
+	void HoverInteraction(float DeltaTime);
 	
 	//Store interact actor that the player is currently looking at
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PlayerInteract")

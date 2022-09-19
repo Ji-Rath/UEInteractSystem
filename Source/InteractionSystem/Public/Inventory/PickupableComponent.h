@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventoryComponent.h"
 #include "Components/ActorComponent.h"
+#include "Engine/DataTable.h"
 #include "Interaction/InteractableComponent.h"
 #include "PickupableComponent.generated.h"
 
@@ -22,6 +24,8 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
@@ -34,6 +38,11 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FUsePickupable OnUsePickupable;
 
-	UPROPERTY(EditAnywhere, Category = "Pickupable")
-	int Amount = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickupable")
+	FInventoryContents ItemData;
+	
+	FTimerHandle DestroyTimer;
+
+	virtual FText GetName() const override;
+
 };

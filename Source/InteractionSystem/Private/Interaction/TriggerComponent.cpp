@@ -21,9 +21,12 @@ void UTriggerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (UInteractableComponent* Owner = GetOwner()->FindComponentByClass<UInteractableComponent>())
+	if (bAutoManage)
 	{
-		Owner->OnInteract.AddDynamic(this, &UTriggerComponent::TriggerActors);
+		if (UInteractableComponent* Owner = GetOwner()->FindComponentByClass<UInteractableComponent>())
+		{
+			Owner->OnInteract.AddDynamic(this, &UTriggerComponent::TriggerActors);
+		}	
 	}
 }
 
@@ -67,21 +70,28 @@ void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 	/** Call trigger function for all actors in array */
 	for (FComponentReference Interactable : InteractablesToTrigger)
 	{
-		
 		auto* InteractableTrigger = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor));
 		auto* ToggleInteractableTrigger = Cast<UToggleInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor));
 		auto* ToggleInteractable = GetOwner()->FindComponentByClass<UToggleInteractableComponent>();
-		
-		// For toggle interactables, match the state so they are synced together
-		if (ToggleInteractable && ToggleInteractableTrigger)
+
+		if (InteractableTrigger && bModifyFilters)
 		{
-			// Since the state of the interactable changes before triggering other actors, the condition has to be inverted
-			if (ToggleInteractable->GetState() != ToggleInteractableTrigger->GetState())
-				InteractableTrigger->OnInteract.Broadcast(Instigator);
+			InteractableTrigger->InteractFilters.Append(ModifyFilters);
 		}
-		else
+
+		if (bCallOnInteract)
 		{
-			InteractableTrigger->OnInteract.Broadcast(Instigator);
+			// For toggle interactables, match the state so they are synced together
+			if (ToggleInteractable && ToggleInteractableTrigger)
+			{
+				// Since the state of the interactable changes before triggering other actors, the condition has to be inverted
+				if (ToggleInteractable->GetState() != ToggleInteractableTrigger->GetState())
+					InteractableTrigger->OnInteract.Broadcast(Instigator);
+			}
+			else
+			{
+				InteractableTrigger->OnInteract.Broadcast(Instigator);
+			}
 		}
 	}
 }

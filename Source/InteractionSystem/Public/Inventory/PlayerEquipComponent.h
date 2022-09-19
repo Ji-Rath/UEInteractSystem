@@ -10,7 +10,7 @@ class AInteractable;
 class APickupable;
 class UItemData;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, UItemData*, ItemData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, const FInventoryContents&, ItemData);
 
 UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
@@ -28,14 +28,16 @@ public:
 
 	/** Equip the item that is in the slot */
 	UFUNCTION(BlueprintCallable)
-	void EquipItem(UItemData* Item);
+	void EquipItem(const FInventoryContents& Item);
 
 	/** Unequip any currently equipped items */
 	UFUNCTION(BlueprintCallable)
 	void UnequipItem();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
-	UItemData* GetEquippedItemData() const;
+	FInventoryContents GetEquippedItemData() const;
+
+	FItemInfo GetEquippedItemInfo() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
 	AActor* GetEquippedItem() const;
@@ -45,13 +47,16 @@ public:
 
 	UPROPERTY()
 	FUseItem OnItemUse;
+	
+	UPROPERTY(BlueprintReadWrite, SaveGame)
+	AActor* EquippedActor;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	FComponentReference ItemAttachParent;
 
 	UPROPERTY()
-	AActor* EquippedItem = nullptr;
+	FInventoryContents EquippedItem;
 
 	/** Starting offset for equipping an item */
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
@@ -84,6 +89,9 @@ private:
 	/** Called to use an item on an interactable */
 	UFUNCTION()
 	void ItemInteract(UInteractableComponent* Interactable);
+
+	UPROPERTY()
+	FVector OriginalSocketOffset;
 
 };
 
