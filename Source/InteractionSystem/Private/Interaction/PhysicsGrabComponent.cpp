@@ -56,9 +56,9 @@ void UPhysicsGrabComponent::BeginPlay()
 	const APlayerController* PlayerController = Player->GetController<APlayerController>();
 	if  (PlayerController)
 	{
-		InputScale.Pitch = PlayerController->InputPitchScale;
-		InputScale.Roll = PlayerController->InputRollScale;
-		InputScale.Yaw = PlayerController->InputYawScale;
+		InputScale.Pitch = PlayerController->InputPitchScale_DEPRECATED;
+		InputScale.Roll = PlayerController->InputRollScale_DEPRECATED;
+		InputScale.Yaw = PlayerController->InputYawScale_DEPRECATED;
 	}
 }
 

@@ -10,9 +10,6 @@ class INTERACTIONSYSTEM_API UAreaInteractComponent : public UPlayerInteractCompo
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(UseComponentPicker,AllowedClasses="UShapeComponent"))
-	FComponentReference OverlapVolume;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<AActor*> OverlappingActors;
 

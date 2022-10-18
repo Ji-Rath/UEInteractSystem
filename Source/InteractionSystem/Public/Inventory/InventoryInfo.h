@@ -32,13 +32,13 @@ struct FInventoryContents
 		Count = 0;
 	}
 
-	FInventoryContents(FDataTableRowHandle Item, int Amount)
+	FInventoryContents(const FDataTableRowHandle& Item, int Amount)
 	{
 		RowHandle = Item;
 		Count = Amount;
 	}
 
-	FInventoryContents(FDataTableRowHandle Item)
+	FInventoryContents(const FDataTableRowHandle& Item)
 	{
 		RowHandle = Item;
 		Count = 1;
@@ -48,7 +48,7 @@ struct FInventoryContents
 	// be moved outside the struct. Its really only being kept due to the convenience of setting values in the editor
 	static void PrepareSerialization(FInventoryContents& objToSerialize)
 	{
-		const TSoftObjectPtr<UDataTable> DataTable = objToSerialize.RowHandle.DataTable;
+		const TSoftObjectPtr<UDataTable> DataTable = objToSerialize.RowHandle.DataTable.Get();
 		if (DataTable.IsValid())
 		{
 			objToSerialize.RowName = objToSerialize.RowHandle.RowName;
