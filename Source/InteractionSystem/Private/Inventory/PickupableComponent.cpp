@@ -6,8 +6,9 @@
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
+#include "Interaction/ItemData.h"
 #include "Inventory/InventoryComponent.h"
-#include "Inventory/ItemDataComponent.h"
+#include "Inventory/InventoryInfo.h"
 
 
 // Sets default values for this component's properties
@@ -16,8 +17,6 @@ UPickupableComponent::UPickupableComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	ItemData.Count = 1;
 	// ...
 }
 
@@ -55,7 +54,7 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	/** Attempt to add the item to the inventory, destroy the item if successful */
 	if (InventoryRef)
 	{
-		bool Success = IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData);
+		bool Success = true;//IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData);
 
 		// Delayed destruction is needed to handle async function calls when OnInteract is called
 		FTimerDelegate DestroyDelegate;
@@ -77,7 +76,7 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 
 FText UPickupableComponent::GetName() const
 {
-	if (FItemInfo* ItemInfo = ItemData.GetRow<FItemInfo>(""))
+	if (auto* ItemInfo = ItemData.ItemInformation)
 	{
 		return ItemInfo->DisplayName;
 	}

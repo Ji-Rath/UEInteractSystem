@@ -70,8 +70,8 @@ void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 	/** Call trigger function for all actors in array */
 	for (FComponentReference Interactable : InteractablesToTrigger)
 	{
-		auto* InteractableTrigger = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor));
-		auto* ToggleInteractableTrigger = Cast<UToggleInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor));
+		auto* InteractableTrigger = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get()));
+		auto* ToggleInteractableTrigger = Cast<UToggleInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get()));
 		auto* ToggleInteractable = GetOwner()->FindComponentByClass<UToggleInteractableComponent>();
 
 		if (InteractableTrigger && bModifyFilters)

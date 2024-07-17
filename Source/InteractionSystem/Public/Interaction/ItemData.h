@@ -9,40 +9,8 @@
 
 class UStaticMesh;
 class UTexture;
-/**
- * Data Asset that stores essential values for an interactable, more specifically a pickupable
- */
-UCLASS()
-class INTERACTIONSYSTEM_API UItemData : public UPrimaryDataAsset
-{
-	GENERATED_BODY()
-	
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FText Name;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FText Description;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int MaxStack;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AActor> ActorClass;
-
-	/** Compare classes when comparing ItemData */
-	bool operator==(const UItemData& OtherItem) const
-	{
-		return GetClass() == OtherItem.GetClass();
-	}
-
-	UItemData() {
-		Name = FText::FromString("NoName");
-		Description = FText::FromString("NoDesc");
-		MaxStack = 1;
-	}
-};
-
+/** Enum that defines the type of stacking that an item can have */
 UENUM()
 enum class EStackableType
 {
@@ -54,31 +22,21 @@ enum class EStackableType
 	InfiniteStack
 };
 
-UENUM()
-enum class EItemType
+/** Holds information about an item */
+UCLASS(BlueprintType)
+class INTERACTIONSYSTEM_API UItemInformation : public UDataAsset
 {
-	// The item is a simple pickupable
-	Item,
-	// The item is meant to be read from the world
-	Readable
-};
-
-/** Structure that defines a level up table entry */
-USTRUCT(BlueprintType)
-struct FItemInfo : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
 
 public:
 
-	FItemInfo()
+	UItemInformation()
 	{
 		DisplayName = FText::FromString(TEXT("NoDesc"));
 		Description = FText::FromString(TEXT("NoDesc"));
 		StackableType = EStackableType::NoStacking;
 		MaxStack = 1;
 		ItemMesh = nullptr;
-		ItemType = EItemType::Item;
 	}
 	
 	// The display name of the item
@@ -89,6 +47,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	FText Description;
 
+	/** Texture of item */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Visual")
+	UTexture2D* ItemIcon = nullptr;
+
 	// Determines how the item will stack when there is more than 1 in an inventory
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	EStackableType StackableType;
@@ -96,10 +58,6 @@ public:
 	// Whether the item uses a custom class or not
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	bool bCustomClass = false;
-
-	// The type of item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
-	EItemType ItemType;
 
 	// The custom actor used for the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh", meta=(EditCondition="bCustomClass == true", EditConditionHides))
@@ -126,8 +84,18 @@ public:
 		return StackableType == EStackableType::InfiniteStack || (StackableType == EStackableType::Stackable && Count <= MaxStack);
 	}
 
-	bool operator!=(const FItemInfo& ItemInfo) const
+	int GetMaxStack() const
 	{
-		return !ItemInfo.DisplayName.IdenticalTo(DisplayName);
+		switch(StackableType)
+		{
+			case EStackableType::NoStacking:
+				return 0;
+			case EStackableType::Stackable:
+				return MaxStack;
+			case EStackableType::InfiniteStack:
+				return INT_MAX;
+			default:
+				return 0;
+		}
 	}
 };

@@ -9,14 +9,11 @@ public class InteractionSystem : ModuleRules
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Public"));
-		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private"));
-			
-		
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"Core",
+				"StructUtils"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

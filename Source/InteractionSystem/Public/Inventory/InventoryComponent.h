@@ -3,19 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InventoryInterface.h"
 #include "Components/ActorComponent.h"
-#include "Interaction/ItemData.h"
 #include "InventoryComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChange, bool, bAdded);
+struct FInstancedStruct;
+class UItemInformation;
+struct FItemHandle;
+struct FInventoryContents;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChange, const TArray<FInventoryContents>&, NewInventory);
+DECLARE_LOG_CATEGORY_EXTERN(LogInventory, Log, All);
 
 /**
  * Inventory system that stores inventory values and allows manipulation of contents
  * Includes equip/unequip system
  */
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class INTERACTIONSYSTEM_API UInventoryComponent : public UActorComponent, public IInventoryInterface
+class INTERACTIONSYSTEM_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -24,61 +27,63 @@ public:
 	UInventoryComponent();
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-public:	
-
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FInventoryChange OnInventoryChange;
-
+public:
 	/** Drop an item from selected slot */
-	UFUNCTION(BlueprintCallable)
-	void DropItem(const FInventoryContents& Item);
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	void DropItem(const FItemHandle& Item);
 
 	/** Remove an item from current inventory */
-	virtual void RemoveFromInventory_Implementation(const FInventoryContents& Item) override;
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
+	virtual void RemoveFromInventory(const FItemHandle& ItemHandle);
 
 	/**
 	 * Find the first slot containing Item
-	 * @param Item - Item to find
+	 * @param ItemHandle - Item to find
 	 * @return Slot with containing item
 	*/
-	UFUNCTION(BlueprintCallable)
-	int FindItemSlot(const FInventoryContents& Item) const;
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	FInventoryContents GetItemByHandle(const FItemHandle& ItemHandle) const;
 
-	/**
-	 * Find the first slot containing Item
-	 * @param Item - Item to find
-	 * @return Slot with containing item
-	*/
-	UFUNCTION(BlueprintCallable)
-	FInventoryContents FindItem(const int Index) const;
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	FItemHandle FindItemByData(const UItemInformation* ItemData) const;
 
 	/**
 	 * Attempt to add an item to the inventory
 	 * @param Item - Item to add
-	 * @param Count - Amount of item
 	 * @return Whether the item could be added to the inventory
 	*/
-	virtual bool AddToInventory_Implementation(const FInventoryContents& Item) override;
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
+	virtual bool AddToInventory(const FInventoryContents& Item, FItemHandle& OutItemHandle);
 
-	UFUNCTION(BlueprintCallable)
+	//** Whether an item can be added to the inventory */
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	virtual bool CanAddToInventory(const FInventoryContents& Item) const;
+
+	UFUNCTION(BlueprintCallable, Category="Inventory")
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
 	void SetInventory(const TArray<FInventoryContents>& NewInventory);
+
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	FItemHandle GenerateUniqueHandle() const;
+
+	UFUNCTION(BlueprintCallable, Category="Inventory", meta=(AutoCreateRefTerm="DynamicData"))
+	virtual FInventoryContents GenerateItem(UItemInformation* ItemInfo, const FInstancedStruct& DynamicData, int Count = 1) const;
 
 	// Base class of pickupable when no custom class is given
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AActor> ItemBaseClass;
-
-private:
-	UPROPERTY(EditAnywhere)
+	
+protected:
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Inventory, Category="Inventory")
 	TArray<FInventoryContents> Inventory;
-
-	UPROPERTY(EditDefaultsOnly)
-	int InventorySize;
-
-	UPROPERTY(EditAnywhere)
-	UDataTable* FallbackTable = nullptr;
+	
+	UFUNCTION()
+	virtual void OnRep_Inventory();
+public:
+	UPROPERTY(BlueprintAssignable)
+	FInventoryChange OnInventoryChange;
 };

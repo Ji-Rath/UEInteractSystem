@@ -37,7 +37,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
 	FInventoryContents GetEquippedItemData() const;
 
-	FItemInfo GetEquippedItemInfo() const;
+	UItemInformation* GetEquippedItemInfo() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
 	AActor* GetEquippedItem() const;
@@ -84,7 +84,7 @@ private:
 
 	/** Called when there is an inventory update */
 	UFUNCTION()
-	void UpdateEquip(bool bAdded);
+	void UpdateEquip(const TArray<FInventoryContents>& NewInventory);
 
 	/** Called to use an item on an interactable */
 	UFUNCTION()

@@ -1,15 +1,14 @@
 
 #include "Inventory/PlayerEquipComponent.h"
 
-#include "InteractionSystem_Settings.h"
 #include "Components/StaticMeshComponent.h"
-#include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Interaction/ItemData.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Interaction/PlayerInteractComponent.h"
-#include "Inventory/ItemDataComponent.h"
+#include "Inventory/InventoryInfo.h"
 #include "Inventory/ItemUsableComponent.h"
 #include "Inventory/PickupableComponent.h"
 
@@ -50,7 +49,7 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/** Interp equipped item to move smoothly into view */
-	if (!GetEquippedItemData().IsNull() && ItemAttachSpring)
+	if (!GetEquippedItemData().ItemHandle.IsValid() && ItemAttachSpring)
 	{
 		const float CurrentOffset = ItemAttachSpring->TargetOffset.Z;
 		if (!FMath::IsNearlyEqual(CurrentOffset, InitialSpringArmOffset))
@@ -65,7 +64,7 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 	
 	// Update custom class if needed
 	TSubclassOf<AActor> ItemBaseClass = InventoryCompRef->ItemBaseClass;
-	if (FItemInfo* ItemInfo = Item.GetRow<FItemInfo>(""))
+	if (auto* ItemInfo = Item.ItemInformation)
 	{
 		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
 	}
@@ -83,9 +82,9 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 	if (auto* Mesh = Pickupable->FindComponentByClass<UStaticMeshComponent>())
 	{
 		Mesh->SetSimulatePhysics(false);
-		if (!GetEquippedItemData().IsNull() && !GetEquippedItemData().GetRow<FItemInfo>("")->bCustomClass)
+		if (!GetEquippedItemData().ItemHandle.IsValid() && !GetEquippedItemData().ItemInformation->bCustomClass)
 		{
-			Mesh->SetStaticMesh(GetEquippedItemInfo().ItemMesh.Get());
+			Mesh->SetStaticMesh(GetEquippedItemInfo()->ItemMesh.Get());
 		}
 	}
 
@@ -99,7 +98,7 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 	{
 		ItemAttachSpring->SocketOffset = OriginalSocketOffset;
 		
-		if (FItemInfo* ItemInfo = Item.GetRow<FItemInfo>(""))
+		if (auto* ItemInfo = Item.ItemInformation)
 		{
 			ItemAttachSpring->SocketOffset += ItemInfo->ItemOffset;
 		}
@@ -124,7 +123,7 @@ void UPlayerEquipComponent::UnequipItem()
 		{
 			Item->Destroy();
 		}
-		EquippedItem = FDataTableRowHandle();
+		EquippedItem = FInventoryContents();
 		if (ItemAttachSpring)
 			ItemAttachSpring->TargetOffset.Z = InitialSpringArmOffset;
 	}
@@ -135,13 +134,13 @@ FInventoryContents UPlayerEquipComponent::GetEquippedItemData() const
 	return EquippedItem;
 }
 
-FItemInfo UPlayerEquipComponent::GetEquippedItemInfo() const
+UItemInformation* UPlayerEquipComponent::GetEquippedItemInfo() const
 {
-	if (FItemInfo* ItemInfo = EquippedItem.GetRow<FItemInfo>(""))
+	if (UItemInformation* ItemInfo = EquippedItem.ItemInformation)
 	{
-		return *ItemInfo;
+		return ItemInfo;
 	}
-	return FItemInfo();
+	return nullptr;
 	
 }
 
@@ -152,7 +151,7 @@ AActor* UPlayerEquipComponent::GetEquippedItem() const
 
 void UPlayerEquipComponent::DropEquippedItem()
 {
-	if (!GetEquippedItemData().IsNull())
+	if (!GetEquippedItemData().ItemHandle.IsValid())
 	{
 		/** Unequip any items that were binded to the actor */
 		TArray<AActor*> ItemsAttached;
@@ -178,33 +177,33 @@ void UPlayerEquipComponent::DropEquippedItem()
 		}
 		
 		/** Remove item from inventory */
-		IInventoryInterface::Execute_RemoveFromInventory(InventoryCompRef, GetEquippedItemData());
+		InventoryCompRef->RemoveFromInventory(GetEquippedItemData().ItemHandle);
 
 		EquippedItem = FInventoryContents();
 		EquippedActor = nullptr;
 	}
 }
 
-void UPlayerEquipComponent::UpdateEquip(bool bAdded)
+void UPlayerEquipComponent::UpdateEquip(const TArray<FInventoryContents>& NewInventory)
 {
 	InventoryCompRef->GetInventory(OUT Inventory);
-	if (bAdded)
+	if (true)
 	{
 		/** Equip the item that was just picked up if the player is empty handed */
-		if (EquippedItem.IsNull() && Inventory.Num() > 0)
+		if (EquippedItem.ItemHandle.IsValid() && Inventory.Num() > 0)
 			EquipItem(Inventory[Inventory.Num()-1]);
 	}
 	else
 	{
 		/** Ensure that equipped item still exists */
-		if (InventoryCompRef->FindItemSlot(GetEquippedItemData()) == -1)
+		//if (InventoryCompRef->FindItemSlot(GetEquippedItemData()) == -1)
 			UnequipItem();
 	}
 }
 
 void UPlayerEquipComponent::ItemInteract(UInteractableComponent* Interactable)
 {
-	if (GetEquippedItemData().IsNull()) { return; }
+	if (GetEquippedItemData().ItemHandle.IsValid()) { return; }
 	
 	if (Interactable)
 	{

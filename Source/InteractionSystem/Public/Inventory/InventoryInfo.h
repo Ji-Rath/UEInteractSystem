@@ -4,105 +4,109 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "InstancedStruct.h"
 #include "InventoryInfo.generated.h"
 
+class UItemInformation;
+
+// Handle for an item
+USTRUCT(BlueprintType)
+struct FItemHandle
+{
+	GENERATED_BODY()
+	
+	int HandleID = -1;
+	
+	FItemHandle(int ID = -1) : HandleID(ID) {}
+
+	virtual bool IsValid()
+	{
+		return HandleID != -1;
+	}
+
+	bool operator==(const FItemHandle& ItemHandle) const = default;
+};
+
+/** Holds information about an item */
 USTRUCT(Blueprintable, BlueprintType)
 struct FInventoryContents
 {
-	GENERATED_USTRUCT_BODY()
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FItemHandle ItemHandle;
 
 	// Used to easily get data table row in editor. Is not reliable to give accurate info when playing in-game
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FDataTableRowHandle RowHandle;
-
-	// Primarily used for serialization, should be identical to RowHandle RowName
-	UPROPERTY(SaveGame)
-	FName RowName;
-
-	// String path to Table, used for serialization
-	UPROPERTY(SaveGame)
-	FString TableString;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UItemInformation* ItemInformation;
 
 	// The current item count in the stack
 	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite)
 	int Count;
 
+	// Dynamic data that will vary from item to item
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FInstancedStruct DynamicData;
+
+	template<typename T>
+	T* GetItemInformation() const
+	{
+		return Cast<T>(ItemInformation);
+	}
+
 	FInventoryContents()
 	{
 		Count = 0;
+		ItemInformation = nullptr;
 	}
 
-	FInventoryContents(const FDataTableRowHandle& Item, int Amount)
+	FInventoryContents(UItemInformation* Item, int Amount)
 	{
-		RowHandle = Item;
+		ItemInformation = Item;
 		Count = Amount;
 	}
 
-	FInventoryContents(const FDataTableRowHandle& Item)
+	FInventoryContents(UItemInformation* Item, int Amount, const FInstancedStruct& InDynamicData)
 	{
-		RowHandle = Item;
+		ItemInformation = Item;
+		Count = Amount;
+		DynamicData = InDynamicData;
+	}
+
+	FInventoryContents(UItemInformation* Item)
+	{
+		ItemInformation = Item;
 		Count = 1;
 	}
 
-	// In order to support serialization, object pointers should be converted to string paths. Due to limitations with FDataTableRowHandle, variables need to
-	// be moved outside the struct. Its really only being kept due to the convenience of setting values in the editor
-	static void PrepareSerialization(FInventoryContents& objToSerialize)
-	{
-		const TSoftObjectPtr<UDataTable> DataTable = objToSerialize.RowHandle.DataTable.Get();
-		if (DataTable.IsValid())
-		{
-			objToSerialize.RowName = objToSerialize.RowHandle.RowName;
-			objToSerialize.TableString = DataTable.ToSoftObjectPath().ToString();
-		}
-	}
-	
+	// Compare data (besides count) to see if two items are the same
 	bool operator==(const FInventoryContents& OtherSlot) const
 	{
-		const FName Name = GetRowName();
-		const FName OtherName = OtherSlot.GetRowName();
-		return Name == OtherName;
+		return ItemInformation == OtherSlot.ItemInformation && DynamicData == OtherSlot.DynamicData;
 	}
 
-	FName GetRowName() const
+	// Compare item handles to see if two items are the same
+	bool operator==(const FItemHandle& OtherItemHandle) const
 	{
-		return RowName.IsNone() ? RowHandle.RowName : RowName;
+		return ItemHandle == OtherItemHandle;
+	}
+
+	// Compare static data to see if two items are the same
+	bool operator==(const UItemInformation* OtherItemInfo) const
+	{
+		return ItemInformation == OtherItemInfo;
 	}
 	
-	friend FArchive& operator<<(FArchive& Ar, FInventoryContents& objToSerialize) {
-		PrepareSerialization(objToSerialize);
+	friend FArchive& operator<<(FArchive& Ar, FInventoryContents& objToSerialize)
+	{
 		Ar << objToSerialize.Count;
-		Ar << objToSerialize.TableString;
-		Ar << objToSerialize.RowName;
 		return Ar;
 	}
 
-	/** Get the row straight from the row handle */
-	template <class T>
-	T* GetRow(const TCHAR* ContextString) const
-	{
-		if (!RowHandle.IsNull())
-		{
-			return RowHandle.GetRow<T>("");
-		}
-		
-		const TSoftObjectPtr<UDataTable> DataTable = TSoftObjectPtr<UDataTable>(TableString);
-		if (DataTable.IsValid())
-		{
-			return DataTable->FindRow<T>(RowName, ContextString);
-		}
-		
-		return nullptr;
-	}
-
-	template <class T>
-	T* GetRow(const FString& ContextString) const
-	{
-		return GetRow<T>(*ContextString);
-	}
-
-	/** Returns true if this handle is specifically pointing to nothing */
-	bool IsNull() const
-	{
-		return TableString.IsEmpty() && RowHandle.IsNull();
-	}
+	/**
+	 * Attempt to add items to the stack
+	 * @param Amount The amount to add
+	 * @return The amount that could not be added to the stack
+	 */
+	int AddToStack(int Amount);
 };

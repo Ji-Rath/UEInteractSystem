@@ -4,9 +4,7 @@
 #include "Interaction/InteractableComponent.h"
 
 #include "GameFramework/Actor.h"
-#include "Interaction/ItemData.h"
 #include "Interaction/PlayerInteractComponent.h"
-#include "Inventory/ItemDataComponent.h"
 
 
 // Sets default values for this component's properties

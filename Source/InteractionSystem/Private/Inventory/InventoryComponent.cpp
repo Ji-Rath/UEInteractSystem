@@ -3,12 +3,13 @@
 
 #include "Inventory/InventoryComponent.h"
 
-#include "InteractionSystem_Settings.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
-#include "Inventory/PickupableComponent.h"
-#include "Inventory/PlayerEquipComponent.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Inventory/InventoryInfo.h"
+#include "Interaction/ItemData.h"
+#include "Net/UnrealNetwork.h"
+
+DEFINE_LOG_CATEGORY(LogInventory);
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -20,98 +21,90 @@ UInventoryComponent::UInventoryComponent()
 	// ...
 }
 
-
-// Called when the game starts
-void UInventoryComponent::BeginPlay()
+void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::BeginPlay();
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	// ...
+	DOREPLIFETIME(UInventoryComponent, Inventory);
+}
+
+void UInventoryComponent::DropItem(const FItemHandle& Item)
+{
+}
+
+void UInventoryComponent::RemoveFromInventory(const FItemHandle& ItemHandle)
+{
+	if (int Index = Inventory.IndexOfByKey(ItemHandle))
+	{
+		Inventory.RemoveAtSwap(Index);
+	}
+}
+
+FInventoryContents UInventoryComponent::GetItemByHandle(const FItemHandle& ItemHandle) const
+{
+	if (auto ItemContents = Inventory.FindByKey(ItemHandle))
+	{
+		return *ItemContents;
+	}
 	
-}
-
-void UInventoryComponent::DropItem(const FInventoryContents& Item)
-{
-	APawn* Player = GetOwner<APawn>();
-	FActorSpawnParameters SpawnParams = FActorSpawnParameters();
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-	AActor* DroppedItem = GetWorld()->SpawnActor<AActor>(AActor::StaticClass(), GetOwner()->GetActorLocation(), FRotator::ZeroRotator);
-
-	RemoveFromInventory(Item);
-}
-
-void UInventoryComponent::RemoveFromInventory_Implementation(const FInventoryContents& Item)
-{
-	/** If there is an item at the slot, remove specified amount */
-	int Slot = FindItemSlot(Item);
-	if (Inventory.IsValidIndex(Slot))
-	{
-		Inventory[Slot].Count -= Item.Count;
-		if (Inventory[Slot].Count <= 0)
-			Inventory.RemoveAt(Slot);
-		OnInventoryChange.Broadcast(false);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Unable to remove item %s from inventory!"), *(Item.RowName.ToString()));
-	}
-}
-
-int UInventoryComponent::FindItemSlot(const FInventoryContents& Item) const
-{
-	/** Find slot with item in it */
-	for (int i = 0; i < Inventory.Num(); i++)
-	{
-		if (Item == Inventory[i])
-		{
-			return i;
-		}
-	}
-	/** Search failed */
-	return -1;
-}
-
-FInventoryContents UInventoryComponent::FindItem(const int Index) const
-{
-	if (Inventory.IsValidIndex(Index))
-	{
-		return Inventory[Index];
-	}
-
 	return FInventoryContents();
 }
 
-bool UInventoryComponent::AddToInventory_Implementation(const FInventoryContents& Item)
+FItemHandle UInventoryComponent::FindItemByData(const UItemInformation* ItemData) const
 {
-	for (int i=0;i<Inventory.Num();i++)
+	if (auto Item = Inventory.FindByKey(ItemData))
 	{
-		FInventoryContents& InventoryContent = Inventory[i];
-		FItemInfo* ItemInfo = Item.GetRow<FItemInfo>("");
-		/** Compare names to see if they are the same item */
-		if (InventoryContent.RowName == Item.RowName)
+		return Item->ItemHandle;
+	}
+	
+	return FItemHandle();
+}
+
+bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHandle& OutItemHandle)
+{
+	auto CountToAdd = Item.Count;
+	
+	for (auto& InventoryContents : Inventory)
+	{
+		// If the item is already in the inventory
+		if (InventoryContents.ItemInformation == Item.ItemInformation)
 		{
-			/** Ensure that adding the item will not exceed the max stack */
-			if (ItemInfo && ItemInfo->CanStack(InventoryContent.Count + Item.Count))
+			int NewStack = InventoryContents.Count + CountToAdd;
+			if (InventoryContents.ItemInformation->CanStack(NewStack))
 			{
-				InventoryContent.Count += Item.Count;
-				OnInventoryChange.Broadcast(true);
-				return true;
+				UE_LOG(LogInventory, Log, TEXT("Stacked item %s in inventory"), *Item.ItemInformation->DisplayName.ToString());
+				CountToAdd = InventoryContents.AddToStack(Item.Count);
+				OnRep_Inventory();
+				
+				if (CountToAdd == 0)
+				{
+					OutItemHandle = InventoryContents.ItemHandle;
+					return true;
+				}
 			}
 		}
 	}
-
-	if (Inventory.Num() < InventorySize)
+	
+	// If the item is not in the inventory
+	if (CanAddToInventory(Item))
 	{
-		/** Just add the item to a new slot */
-		FInventoryContents* InventoryItem = new FInventoryContents(Item);
-
-		int Slot = Inventory.Add(*InventoryItem);
-		OnInventoryChange.Broadcast(true);
-
+		UE_LOG(LogInventory, Log, TEXT("Added item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
+		Inventory.Emplace(Item);
+		OutItemHandle = Item.ItemHandle;
+		OnRep_Inventory();
 		return true;
+	}
+	else
+	{
+		UE_LOG(LogInventory, Warning, TEXT("Failed to add item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
 	}
 	
 	return false;
+}
+
+bool UInventoryComponent::CanAddToInventory(const FInventoryContents& Item) const
+{
+	return true;
 }
 
 void UInventoryComponent::GetInventory(TArray<FInventoryContents>& OutInventory) const
@@ -122,7 +115,41 @@ void UInventoryComponent::GetInventory(TArray<FInventoryContents>& OutInventory)
 void UInventoryComponent::SetInventory(const TArray<FInventoryContents>& NewInventory)
 {
 	Inventory = NewInventory;
+	OnRep_Inventory();
+}
 
-	OnInventoryChange.Broadcast(true);
+FItemHandle UInventoryComponent::GenerateUniqueHandle() const
+{
+	int UniqueID = 0;
+	bool bIDTaken = true;
+
+	while (bIDTaken)
+	{
+		bIDTaken = false;
+		for (const auto& InventoryContents : Inventory)
+		{
+			if (InventoryContents.ItemHandle.HandleID == UniqueID)
+			{
+				UniqueID++;
+				bIDTaken = true;
+				break;
+			}
+		}
+	}
+	return FItemHandle(UniqueID);
+}
+
+FInventoryContents UInventoryComponent::GenerateItem(UItemInformation* ItemInfo, const FInstancedStruct& DynamicData,
+                                                     int Count) const
+{
+	auto NewItem = FInventoryContents(ItemInfo, Count, DynamicData);
+	NewItem.ItemHandle = GenerateUniqueHandle();
+	
+	return NewItem;
+}
+
+void UInventoryComponent::OnRep_Inventory()
+{
+	OnInventoryChange.Broadcast(Inventory);
 }
 
