@@ -14,7 +14,8 @@ USTRUCT(BlueprintType)
 struct FItemHandle
 {
 	GENERATED_BODY()
-	
+
+	UPROPERTY()
 	int HandleID = -1;
 	
 	FItemHandle(int ID = -1) : HandleID(ID) {}

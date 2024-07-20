@@ -21,5 +21,10 @@
 			"LoadingPhase": "PreDefault"
 		}
 	],
-	"Plugins": []
+	"Plugins": [
+		{
+			"Name": "StructUtils",
+			"Enabled": true
+		}
+	]
 }
