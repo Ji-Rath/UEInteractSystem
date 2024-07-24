@@ -36,6 +36,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ToggleState();
 
+	UFUNCTION()
 	void ShouldToggleState(bool bShouldToggle);
 
 	void ToggleState(AActor* Interactor);
