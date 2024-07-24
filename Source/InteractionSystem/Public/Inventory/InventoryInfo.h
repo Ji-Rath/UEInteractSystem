@@ -110,4 +110,9 @@ struct FInventoryContents
 	 * @return The amount that could not be added to the stack
 	 */
 	int AddToStack(int Amount);
+
+	virtual bool IsValid() const
+	{
+		return Count > 0 && ItemInformation;
+	}
 };

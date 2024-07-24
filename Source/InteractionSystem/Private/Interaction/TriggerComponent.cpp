@@ -42,8 +42,7 @@ void UTriggerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UTriggerComponent::TriggerActors(AActor* Instigator)
 {
-	FTimerDelegate TimerDel;
-	TimerDel.BindUObject(this, &UTriggerComponent::ExecuteInteraction, Instigator);
+	FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UTriggerComponent::ExecuteInteraction, Instigator);
 
 	bool bCanTrigger = TriggerCount < TriggerAmount || TriggerAmount == 0;
 	if (bCanTrigger)
@@ -68,8 +67,9 @@ void UTriggerComponent::TriggerActors(AActor* Instigator)
 void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 {
 	/** Call trigger function for all actors in array */
-	for (FComponentReference Interactable : InteractablesToTrigger)
+	for (const FComponentReference& Interactable : InteractablesToTrigger)
 	{
+		if (!Interactable.OtherActor.IsValid()) { continue; }
 		auto* InteractableTrigger = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get()));
 		auto* ToggleInteractableTrigger = Cast<UToggleInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get()));
 		auto* ToggleInteractable = GetOwner()->FindComponentByClass<UToggleInteractableComponent>();

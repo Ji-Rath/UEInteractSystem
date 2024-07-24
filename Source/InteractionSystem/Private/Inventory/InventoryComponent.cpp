@@ -35,7 +35,8 @@ void UInventoryComponent::DropItem(const FItemHandle& Item)
 
 void UInventoryComponent::RemoveFromInventory(const FItemHandle& ItemHandle)
 {
-	if (int Index = Inventory.IndexOfByKey(ItemHandle))
+	int Index = Inventory.IndexOfByKey(ItemHandle);
+	if (Index != INDEX_NONE)
 	{
 		Inventory.RemoveAtSwap(Index);
 	}
@@ -63,6 +64,8 @@ FItemHandle UInventoryComponent::FindItemByData(const UItemInformation* ItemData
 
 bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHandle& OutItemHandle)
 {
+	if (!ensureMsgf(Item.IsValid(), TEXT("Invalid item to add to inventory"))) { return false; }
+	
 	auto CountToAdd = Item.Count;
 	
 	for (auto& InventoryContents : Inventory)
