@@ -38,7 +38,7 @@ struct FInventoryContents
 	FItemHandle ItemHandle;
 
 	// Used to easily get data table row in editor. Is not reliable to give accurate info when playing in-game
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	UItemInformation* ItemInformation;
 
 	// The current item count in the stack

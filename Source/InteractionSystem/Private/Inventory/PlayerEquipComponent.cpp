@@ -2,14 +2,13 @@
 #include "Inventory/PlayerEquipComponent.h"
 
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Interaction/ItemData.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/InventoryComponent.h"
-#include "Interaction/PlayerInteractComponent.h"
 #include "Inventory/InventoryInfo.h"
-#include "Inventory/ItemUsableComponent.h"
 #include "Inventory/PickupableComponent.h"
 
 void UPlayerEquipComponent::BeginPlay()
@@ -27,11 +26,6 @@ void UPlayerEquipComponent::BeginPlay()
 	{
 		InventoryCompRef->OnInventoryChange.AddDynamic(this, &UPlayerEquipComponent::UpdateEquip);
 		InventoryCompRef->GetInventory(OUT Inventory);
-	}
-	auto* InteractComp = GetOwner()->FindComponentByClass<UPlayerInteractComponent>();
-	if (InteractComp)
-	{
-		InteractComp->OnInteract.AddDynamic(this, &UPlayerEquipComponent::ItemInteract);
 	}
 
 	OriginalSocketOffset = ItemAttachSpring->SocketOffset;
@@ -59,11 +53,10 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 
 void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 {
-	if (!ensure(InventoryCompRef->ItemBaseClass)) { return; }
 	UnequipItem();
 	
 	// Update custom class if needed
-	TSubclassOf<AActor> ItemBaseClass = InventoryCompRef->ItemBaseClass;
+	TSubclassOf<AActor> ItemBaseClass = AStaticMeshActor::StaticClass();
 	if (auto* ItemInfo = Item.ItemInformation)
 	{
 		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
@@ -150,7 +143,7 @@ AActor* UPlayerEquipComponent::GetEquippedItem() const
 
 void UPlayerEquipComponent::DropEquippedItem()
 {
-	if (!GetEquippedItemData().ItemHandle.IsValid())
+	if (GetEquippedItemData().ItemHandle.IsValid())
 	{
 		/** Unequip any items that were binded to the actor */
 		TArray<AActor*> ItemsAttached;
@@ -195,22 +188,8 @@ void UPlayerEquipComponent::UpdateEquip(const TArray<FInventoryContents>& NewInv
 	}
 }
 
-void UPlayerEquipComponent::ItemInteract(UInteractableComponent* Interactable)
+void UPlayerEquipComponent::UseItem()
 {
-	if (GetEquippedItemData().ItemHandle.IsValid()) { return; }
-	
-	if (Interactable)
-	{
-		/** Attempt to use item on viewed object */
-		if (UItemUsableComponent* ItemUsableComponent = Interactable->GetOwner()->FindComponentByClass<UItemUsableComponent>())
-		{
-			ItemUsableComponent->OnItemUse.Broadcast(GetOwner(), GetEquippedItemData());
-		}
-	}
-	else
-	{
-		/** Attempt to use the item in hand */
-		OnItemUse.Broadcast(GetEquippedItemData());
-	}
+	EquippedActor->FindComponentByClass<UPickupableComponent>()->UseItem(GetOwner());
 }
  

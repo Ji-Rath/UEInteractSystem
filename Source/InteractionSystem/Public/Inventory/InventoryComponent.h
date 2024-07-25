@@ -72,10 +72,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Inventory", meta=(AutoCreateRefTerm="DynamicData"))
 	virtual FInventoryContents GenerateItem(UItemInformation* ItemInfo, const FInstancedStruct& DynamicData, int Count = 1) const;
-
-	// Base class of pickupable when no custom class is given
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ItemBaseClass;
 	
 protected:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Inventory, Category="Inventory")

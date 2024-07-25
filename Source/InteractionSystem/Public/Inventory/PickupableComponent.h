@@ -10,7 +10,7 @@
 #include "Interaction/InteractableComponent.h"
 #include "PickupableComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUsePickupable, AActor*, User);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, AActor*, User);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UPickupableComponent : public UInteractableComponent
@@ -21,17 +21,12 @@ public:
 	// Sets default values for this component's properties
 	UPickupableComponent();
 
-protected:
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-public:
-
 	/** Add item to interactors inventory */
 	UFUNCTION(BlueprintCallable)
 	void PickupItem(AActor* Interactor);
 	
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FUsePickupable OnUsePickupable;
+	FUseItem OnUseItem;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pickupable")
 	FInventoryContents ItemData;
@@ -42,4 +37,6 @@ public:
 
 	virtual void PerformInteraction(AActor* Interactor, UPrimitiveComponent* Component) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Pickupable")
+	virtual void UseItem(AActor* User);
 };

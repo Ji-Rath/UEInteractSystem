@@ -7,6 +7,7 @@
 #include "Components/ActorComponent.h"
 #include "ToggleInteractableComponent.generated.h"
 
+// Convenience component for handling interaction with toggleable features
 UCLASS(Blueprintable, ClassGroup=(Interaction), meta=(BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UToggleInteractableComponent : public UInteractableComponent
 {

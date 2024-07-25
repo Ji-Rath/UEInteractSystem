@@ -9,6 +9,7 @@
 #include "Interaction/ItemData.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventoryInfo.h"
+#include "Inventory/InventoryLibrary.h"
 
 
 // Sets default values for this component's properties
@@ -20,12 +21,6 @@ UPickupableComponent::UPickupableComponent()
 	// ...
 }
 
-void UPickupableComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-	GetWorld()->GetTimerManager().ClearTimer(DestroyTimer);
-}
-
 void UPickupableComponent::PickupItem(AActor* Interactor)
 {
 	if (!ensure(Interactor)) { return; }
@@ -35,21 +30,10 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	/** Attempt to add the item to the inventory, destroy the item if successful */
 	if (InventoryRef)
 	{
-		bool Success = true;
-
-		// Delayed destruction is needed to handle async function calls when OnInteract is called
-		FTimerDelegate DestroyDelegate;
-		DestroyDelegate.BindLambda([&]
-		{
-			GetOwner()->Destroy();
-		});
-		
-		if (Success)
-		{
-			GetOwner()->SetActorEnableCollision(false);
-			GetOwner()->SetActorHiddenInGame(true);
-			GetWorld()->GetTimerManager().SetTimer(DestroyTimer, DestroyDelegate, 1.f, false);
-		}
+		auto Item = InventoryRef->GenerateItem(ItemData.ItemInformation, ItemData.DynamicData, ItemData.Count);
+		FItemHandle ItemHandle;
+		InventoryRef->AddToInventory(Item, ItemHandle);
+		GetOwner()->Destroy();
 	}
 }
 
@@ -64,7 +48,12 @@ FText UPickupableComponent::GetName_Implementation(UPrimitiveComponent* Componen
 
 void UPickupableComponent::PerformInteraction(AActor* Interactor, UPrimitiveComponent* Component)
 {
-	PickupItem(Interactor);
 	Super::PerformInteraction(Interactor, Component);
+	PickupItem(Interactor);
+}
+
+void UPickupableComponent::UseItem(AActor* User)
+{
+	OnUseItem.Broadcast(User);
 }
 

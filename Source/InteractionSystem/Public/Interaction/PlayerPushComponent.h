@@ -9,6 +9,7 @@ class UPhysicsHandleComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPushObject, bool, bPushingObject);
 
+// Add ability to push physics objects
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UPlayerPushComponent : public UActorComponent
 {

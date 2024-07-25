@@ -9,6 +9,7 @@
 
 class AInteractable;
 
+// Triggers interaction of other actors when the owning actor is interacted with
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UTriggerComponent : public UActorComponent
 {

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "InventoryComponent.h"
+#include "InventoryInfo.h"
 #include "Interaction/InteractableComponent.h"
 #include "PlayerEquipComponent.generated.h"
 
@@ -9,8 +10,6 @@ class USpringArmComponent;
 class AInteractable;
 class APickupable;
 class UItemData;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUseItem, const FInventoryContents&, ItemData);
 
 UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableComponent) )
 class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
@@ -44,9 +43,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
 	void DropEquippedItem();
-
-	UPROPERTY()
-	FUseItem OnItemUse;
 	
 	UPROPERTY(BlueprintReadWrite, SaveGame)
 	AActor* EquippedActor;
@@ -87,8 +83,8 @@ private:
 	void UpdateEquip(const TArray<FInventoryContents>& NewInventory);
 
 	/** Called to use an item on an interactable */
-	UFUNCTION()
-	void ItemInteract(UInteractableComponent* Interactable);
+	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
+	void UseItem();
 
 	UPROPERTY()
 	FVector OriginalSocketOffset;
