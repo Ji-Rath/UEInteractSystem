@@ -45,7 +45,7 @@ void UPlayerPushComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 		/* Stop pushing if the object is no longer infront of the player */
 		if (OutHit.GetComponent() != PhysicsHandle->GetGrabbedComponent())
 		{
-			PushBox->OnInteract.Broadcast(GetOwner());
+			PushBox->Interact(GetOwner(), PhysicsHandle->GetGrabbedComponent());
 		}
 
 		/* Stop pushing if the object is no longer infront of the player */
@@ -53,7 +53,7 @@ void UPlayerPushComponent::TickComponent(float DeltaTime, enum ELevelTick TickTy
 		UStaticMeshComponent* BoxMesh = Cast<UStaticMeshComponent>(PhysicsHandle->GetGrabbedComponent());
 		if (BoxMesh && !GetWorld()->LineTraceSingleByChannel(BoxHit, BoxMesh->GetCenterOfMass(), BoxMesh->GetCenterOfMass() + (100.f * FVector(0.f, 0.f, -1.f)), ECC_Visibility))
 		{
-			PushBox->OnInteract.Broadcast(GetOwner());
+			PushBox->Interact(GetOwner(), PhysicsHandle->GetGrabbedComponent());
 		}
 
 		/* Push object away if its too close, fixes slow movement while pushing */

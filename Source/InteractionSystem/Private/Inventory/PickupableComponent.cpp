@@ -16,33 +16,14 @@ UPickupableComponent::UPickupableComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 	// ...
-}
-
-
-// Called when the game starts
-void UPickupableComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	OnExecuteInteraction.AddDynamic(this, &UPickupableComponent::PickupItem);
 }
 
 void UPickupableComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 	GetWorld()->GetTimerManager().ClearTimer(DestroyTimer);
-}
-
-
-// Called every frame
-void UPickupableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                         FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
 }
 
 void UPickupableComponent::PickupItem(AActor* Interactor)
@@ -54,13 +35,12 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 	/** Attempt to add the item to the inventory, destroy the item if successful */
 	if (InventoryRef)
 	{
-		bool Success = true;//IInventoryInterface::Execute_AddToInventory(InventoryRef, ItemData);
+		bool Success = true;
 
 		// Delayed destruction is needed to handle async function calls when OnInteract is called
 		FTimerDelegate DestroyDelegate;
 		DestroyDelegate.BindLambda([&]
 		{
-			OnFinishInteract.Broadcast(true);
 			GetOwner()->Destroy();
 		});
 		
@@ -68,18 +48,23 @@ void UPickupableComponent::PickupItem(AActor* Interactor)
 		{
 			GetOwner()->SetActorEnableCollision(false);
 			GetOwner()->SetActorHiddenInGame(true);
-			AddInteractFilter(Interactor->GetClass(), false);
 			GetWorld()->GetTimerManager().SetTimer(DestroyTimer, DestroyDelegate, 1.f, false);
 		}
 	}
 }
 
-FText UPickupableComponent::GetName() const
+FText UPickupableComponent::GetName_Implementation(UPrimitiveComponent* Component) const
 {
 	if (auto* ItemInfo = ItemData.ItemInformation)
 	{
 		return ItemInfo->DisplayName;
 	}
-	return Name;
+	return Super::GetName(Component);
+}
+
+void UPickupableComponent::PerformInteraction(AActor* Interactor, UPrimitiveComponent* Component)
+{
+	PickupItem(Interactor);
+	Super::PerformInteraction(Interactor, Component);
 }
 

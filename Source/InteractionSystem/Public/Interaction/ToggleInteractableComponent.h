@@ -12,18 +12,12 @@ class INTERACTIONSYSTEM_API UToggleInteractableComponent : public UInteractableC
 {
 	GENERATED_BODY()
 
+protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 public:
 	// Sets default values for this component's properties
 	UToggleInteractableComponent();
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetState(AActor* Interactor, bool bNewState);
@@ -36,15 +30,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ToggleState();
 
-	UFUNCTION()
-	void ShouldToggleState(bool bShouldToggle);
-
 	void ToggleState(AActor* Interactor);
 
-	UPROPERTY(EditAnywhere, SaveGame)
-	bool bIsOn = false;
+	virtual void PerformInteraction(AActor* Interactor, UPrimitiveComponent* Component) override;
 
-	/* Determines whether you want the state of the interactable to change automatically or be manually managed by calling OnFinishInteraction */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bAutoManageState = true;
+	UPROPERTY(EditAnywhere, Replicated, SaveGame)
+	bool bIsOn = false;
 };

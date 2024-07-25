@@ -12,87 +12,46 @@ UInteractableComponent::UInteractableComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+	SetIsReplicatedByDefault(true);
 }
 
-
-// Called when the game starts
-void UInteractableComponent::BeginPlay()
+bool UInteractableComponent::CanInteract_Implementation(AActor* Interactor, UPrimitiveComponent* Component)
 {
-	Super::BeginPlay();
-
-	// Update last interactor when the interactable is interacted with
-	OnInteract.AddDynamic(this, &UInteractableComponent::SetLastInteractor);
-	OnInteract.AddDynamic(this, &UInteractableComponent::PerformInteractCheck);
-	OnFinishInteract.AddDynamic(this, &UInteractableComponent::DisplayInteractMessage);
+	return true;
 }
 
-
-// Called every frame
-void UInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                           FActorComponentTickFunction* ThisTickFunction)
+void UInteractableComponent::Interact(AActor* Interactor, UPrimitiveComponent* Component)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
-void UInteractableComponent::DisplayInteractMessage(bool bSuccess)
-{
-	FText Message = bSuccess ? InteractMessage : CantInteractMessage;
-	SendInteractMessage(Message);
-}
-
-bool UInteractableComponent::CanInteract(TSubclassOf<AActor> User)
-{
-	for (auto& Elem : InteractFilters)
+	if (CanInteract(Interactor, Component))
 	{
-		if (User->StaticClass()->IsChildOf(Elem.Key->StaticClass()))
+		PerformInteraction(Interactor, Component);
+
+		// If we dont have authority, also trigger call on server
+		if (!GetOwner()->HasAuthority())
 		{
-			return Elem.Value;
+			ServerInteract(Interactor, Component);
 		}
 	}
-	return bDefaultInteractable;
 }
 
-void UInteractableComponent::AddInteractFilter(TSubclassOf<AActor> User, bool bCanInteract)
+void UInteractableComponent::ServerInteract_Implementation(AActor* Interactor, UPrimitiveComponent* Component)
 {
-	InteractFilters.Add(User, bCanInteract);
-}
-
-void UInteractableComponent::RemoveInteractFilter(TSubclassOf<AActor> User)
-{
-	InteractFilters.Remove(User);
-}
-
-void UInteractableComponent::ClearInteractFilter()
-{
-	InteractFilters.Empty();
-}
-
-void UInteractableComponent::PerformInteractCheck(AActor* Interactor)
-{
-	bool bCanInteract = CanInteract(Interactor);
-	if (bCanInteract)
+	if (CanInteract(Interactor, Component))
 	{
-		OnExecuteInteraction.Broadcast(Interactor);
+		PerformInteraction(Interactor, Component);
 	}
-	
-	OnFinishInteract.Broadcast(bCanInteract);
 }
 
-bool UInteractableComponent::CanInteract_Implementation(AActor* User)
+void UInteractableComponent::PerformInteraction(AActor* Interactor, UPrimitiveComponent* Component)
 {
-	return CanInteract(User->StaticClass());
+	OnInteract.Broadcast(Interactor, Component);
 }
 
-FText UInteractableComponent::GetName() const
+FText UInteractableComponent::GetName_Implementation(UPrimitiveComponent* Component) const
 {
-	FText DisplayName = Name;
-	
-	return DisplayName;
+	return DefaultName;
 }
 
 void UInteractableComponent::SendInteractMessage(AActor* Interactor, FText Message)
@@ -106,16 +65,6 @@ void UInteractableComponent::SendInteractMessage(AActor* Interactor, FText Messa
 	{
 		PlayerInteract->OnSendInteractMessage.Broadcast(Message);
 	}
-}
-
-void UInteractableComponent::SendInteractMessage(FText Message)
-{
-	SendInteractMessage(LastInteractor, Message);
-}
-
-void UInteractableComponent::SetLastInteractor(AActor* Interactor)
-{
-	LastInteractor = Interactor;
 }
 
 

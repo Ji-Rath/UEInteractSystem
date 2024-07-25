@@ -6,9 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "InteractableComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteract, AActor*, Interactor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FExecuteInteraction, AActor*, Interactor);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFinishInteract, bool, bSuccess);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FInteract, AActor*, Interactor, UPrimitiveComponent*, Component);
 
 UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UInteractableComponent : public UActorComponent
@@ -18,95 +16,31 @@ class INTERACTIONSYSTEM_API UInteractableComponent : public UActorComponent
 public:
 	// Sets default values for this component's properties
 	UInteractableComponent();
+	
+	UFUNCTION(BlueprintPure, BlueprintCallable, BlueprintNativeEvent, Category="Interactable")
+	bool CanInteract(AActor* Interactor, UPrimitiveComponent* Component);
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
-
-	UFUNCTION(BlueprintPure, BlueprintCallable, BlueprintNativeEvent)
-	bool CanInteract(AActor* User);
-
-	bool CanInteract(TSubclassOf<AActor> User);
-
-	UFUNCTION(BlueprintCallable)
-	void AddInteractFilter(TSubclassOf<AActor> User, bool bCanInteract);
-
-	UFUNCTION(BlueprintCallable)
-	void RemoveInteractFilter(TSubclassOf<AActor> User);
-
-	UFUNCTION(BlueprintCallable)
-	void ClearInteractFilter();
-
-	UFUNCTION()
-	void PerformInteractCheck(AActor* Interactor);
-
-	/* Filters used to determine whether an actor can interact with this object */
-	UPROPERTY(EditAnywhere, Category = "Interactable")
-	TMap<TSubclassOf<AActor>, bool> InteractFilters;
-
+	// Perform an interaction on the actor
+	UFUNCTION(BlueprintCallable, Category="Interactable")
+	void Interact(AActor* Interactor, UPrimitiveComponent* Component = nullptr);
+	
 	/* Called when the interactable component is interacted with */
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	UPROPERTY(BlueprintAssignable, Category="Interactable")
 	FInteract OnInteract;
 
-	/* Called when it is verified whether the interactor can interact with this actor (using InteractFilters) */
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FExecuteInteraction OnExecuteInteraction;
-
-	/* Optional delegate to help determine whether the interaction was successful */
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FFinishInteract OnFinishInteract;
-
-	/* Stores the prim component this interactable manages */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FComponentReference PrimComponent;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	virtual FText GetName() const;
-
-	UPROPERTY(EditAnywhere)
-	FText Name;
-
-	/* Determines whether by default any object can interact with this actor */
-	UPROPERTY(EditAnywhere)
-	bool bDefaultInteractable = true;
-
-	/* Determines whether a player even has the opportunity to interact with this object. This is useful when an interactable will only be used by other interactables */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bPlayerInteract = true;
-
-	/* Whether to display message when the interaction was successful. Relies on OnFinishInteract to be called */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Text")
-	bool bInteractText = false;
-	
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "bInteractText"), Category = "Interactable|Text")
-	FText InteractMessage;
-
-	/* Whether to display message when the interaction was unsuccessful. Relies on OnFinishInteract to be called */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interactable|Text")
-	bool bCantInteractText = false;
-	
-	UPROPERTY(EditAnywhere, meta = (EditCondition = "bCantInteractText"), Category = "Interactable|Text")
-	FText CantInteractMessage;
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintNativeEvent, Category="Interactable")
+	FText GetName(UPrimitiveComponent* Component = nullptr) const;
 
 	/* Convenient function for broadcasting interact messages */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Interactable")
 	void SendInteractMessage(AActor* Interactor, FText Message);
 
-	/* Convenience function that uses that last interactor to broadcast interact message */
-	void SendInteractMessage(FText Message);
+protected:
+	UFUNCTION(Server, Reliable)
+	void ServerInteract(AActor* Interactor, UPrimitiveComponent* Component);
 
-	/* The last actor that interacted with this object */
-	UPROPERTY(BlueprintReadOnly)
-	AActor* LastInteractor = nullptr;
+	virtual void PerformInteraction(AActor* Interactor, UPrimitiveComponent* Component);
 
-	UFUNCTION()
-	void SetLastInteractor(AActor* Interactor);
-
-	UFUNCTION()
-	void DisplayInteractMessage(bool bSuccess);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interactable")
+	FText DefaultName;
 };

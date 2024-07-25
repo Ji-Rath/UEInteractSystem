@@ -91,7 +91,6 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 	if (UPickupableComponent* PickupComp = Pickupable->FindComponentByClass<UPickupableComponent>())
 	{
 		PickupComp->ItemData = Item;
-		PickupComp->bPlayerInteract = false;
 	}
 	
 	if (ItemAttachSpring)
@@ -168,11 +167,6 @@ void UPlayerEquipComponent::DropEquippedItem()
 			{
 				Mesh->SetSimulatePhysics(true);
 				Mesh->AddImpulse(ForwardVector * ThrowImpulse);
-			}
-
-			if (UPickupableComponent* Pickupable = Item->FindComponentByClass<UPickupableComponent>())
-			{
-				Pickupable->bPlayerInteract = true;
 			}
 		}
 		

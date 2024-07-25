@@ -28,7 +28,7 @@ public:
 
 	/** TArray of actors to trigger when TriggerActors() function is called */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trigger", meta=(AllowAnyActor, AllowedClasses="InteractableComponent"))
-	TArray<FComponentReference> InteractablesToTrigger;
+	TArray<AActor*> InteractablesToTrigger;
 
 	/* Whether to call the OnInteract delegate on trigger */
 	UPROPERTY(EditAnywhere, Category = "Trigger")
@@ -36,7 +36,7 @@ public:
 
 	/** Function to be called to trigger actors in ActorsToTrigger array */
 	UFUNCTION(BlueprintCallable)
-	void TriggerActors(AActor* Instigator);
+	void TriggerActors(AActor* Instigator, UPrimitiveComponent* Component);
 
 	/** Delay before triggering actors, 0 for no delay */
 	UPROPERTY(EditAnywhere, Category = "Trigger|Advanced")
@@ -46,15 +46,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Trigger|Advanced")
 	int TriggerAmount = 0;
 
-	UPROPERTY(EditAnywhere, Category = "Trigger|Filters")
-	bool bModifyFilters = false;
-
 	/* Determines whether to trigger other components automatically or manually called using TriggerActors */
 	UPROPERTY(EditAnywhere, Category = "Trigger")
 	bool bAutoManage = true;
-
-	UPROPERTY(EditAnywhere, Category = "Trigger|Filters", meta=(EditCondition = "bModifyFilters"))
-	TMap<TSubclassOf<AActor>, bool> ModifyFilters;
 
 private:
 	/** Internal variable for tracking times triggered */

@@ -31,25 +31,10 @@ UInteractableComponent* UPlayerInteractComponent::GetInteractComponent(UPrimitiv
 {
 	if (!PrimitiveComponent) { return nullptr; }
 	
-	UInteractableComponent* InteractableComponent = nullptr;
-	
 	AActor* OwningActor = PrimitiveComponent->GetOwner();
 	if (!OwningActor) { return nullptr; }
-	
-	TInlineComponentArray<UInteractableComponent*> InteractableComponents(OwningActor);
-	OwningActor->GetComponents(InteractableComponents);
 
-	// Loop through InteractableComponents and find the matching component
-	for(UInteractableComponent* Interactable : InteractableComponents)
-	{
-		if (Interactable->PrimComponent.GetComponent(OwningActor) == PrimitiveComponent)
-		{
-			InteractableComponent = Interactable;
-			break;
-		}
-	}
-
-	return InteractableComponent;
+	return OwningActor->FindComponentByClass<UInteractableComponent>();
 }
 
 void UPlayerInteractComponent::HoverInteraction_Implementation(float DeltaTime)
@@ -70,7 +55,7 @@ void UPlayerInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 	UInteractableComponent* HitInteractable = GetInteractComponent(Hit.GetComponent());
 
 	// Invalidate currently viewed interactable if bPlayerInteract turns false
-	if (HitInteractable && HoverPrimitive && !HitInteractable->bPlayerInteract)
+	if (HitInteractable && HoverPrimitive && !HitInteractable->CanInteract(GetOwner(), Hit.GetComponent()))
 	{
 		HoverInteractable = nullptr;
 		HoverPrimitive = nullptr;
@@ -84,7 +69,7 @@ void UPlayerInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 	if (bHitInteractable && HitInteractable)
 	{
 		/** Set interact message when hovering over an interactable */
-		if (HitInteractable->bPlayerInteract)
+		if (HitInteractable->CanInteract(GetOwner(), Hit.GetComponent()))
 		{
 			HoverInteractable = HitInteractable;
 			HoverPrimitive = Hit.GetComponent();
@@ -105,13 +90,10 @@ void UPlayerInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 
 UInteractableComponent* UPlayerInteractComponent::Interact()
 {
-	// Allows classes to use OnInteract without player looking at interactable (ex. using equipped item)
-	OnInteract.Broadcast(HoverInteractable);
-
 	if (HoverInteractable)
 	{
 		/** Trigger interacted actor */
-		HoverInteractable->OnInteract.Broadcast(GetOwner());
+		HoverInteractable->Interact(GetOwner(), nullptr);
 	}
 
 	return HoverInteractable; 

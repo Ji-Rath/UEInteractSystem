@@ -49,7 +49,7 @@ void UAreaInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 			HoverPrimitive = nullptr;
 			OnUpdateInteract.Broadcast(false, nullptr);
 		}
-		else if (HoverInteractable->bPlayerInteract)
+		else if (HoverInteractable->CanInteract(GetOwner(), nullptr))
 		{
 			OnUpdateInteract.Broadcast(true, HoverInteractable);
 		} 

@@ -111,7 +111,7 @@ struct FInventoryContents
 	 */
 	int AddToStack(int Amount);
 
-	virtual bool IsValid() const
+	bool IsValid() const
 	{
 		return Count > 0 && ItemInformation;
 	}

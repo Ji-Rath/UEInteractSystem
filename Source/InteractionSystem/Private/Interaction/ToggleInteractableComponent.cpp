@@ -3,27 +3,24 @@
 
 #include "Interaction/ToggleInteractableComponent.h"
 
+#include "Net/UnrealNetwork.h"
+
+
+void UToggleInteractableComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UToggleInteractableComponent, bIsOn);
+}
 
 // Sets default values for this component's properties
 UToggleInteractableComponent::UToggleInteractableComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
-}
-
-
-// Called when the game starts
-void UToggleInteractableComponent::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	if (bAutoManageState)
-	{
-		OnFinishInteract.AddDynamic(this, &UToggleInteractableComponent::ShouldToggleState);
-	}
 }
 
 void UToggleInteractableComponent::SetState(bool bNewState)
@@ -31,21 +28,11 @@ void UToggleInteractableComponent::SetState(bool bNewState)
 	SetState(GetOwner(), bNewState);
 }
 
-
-// Called every frame
-void UToggleInteractableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                        FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
 void UToggleInteractableComponent::SetState(AActor* Interactor, bool bNewState)
 {
 	if (bIsOn != bNewState)
 	{
-		OnInteract.Broadcast(Interactor);
+		Interact(Interactor);
 	}
 }
 
@@ -59,16 +46,18 @@ void UToggleInteractableComponent::ToggleState(AActor* Interactor)
 	bIsOn = !bIsOn;
 }
 
+void UToggleInteractableComponent::PerformInteraction(AActor* Interactor, UPrimitiveComponent* Component)
+{
+	if (CanInteract(Interactor, Component))
+	{
+		ToggleState(Interactor);
+	}
+	
+	Super::PerformInteraction(Interactor, Component);
+}
+
 void UToggleInteractableComponent::ToggleState()
 {
 	bIsOn = !bIsOn;
-}
-
-void UToggleInteractableComponent::ShouldToggleState(bool bShouldToggle)
-{
-	if (bShouldToggle)
-	{
-		ToggleState();
-	}
 }
 

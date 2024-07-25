@@ -40,7 +40,7 @@ void UTriggerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
-void UTriggerComponent::TriggerActors(AActor* Instigator)
+void UTriggerComponent::TriggerActors(AActor* Instigator, UPrimitiveComponent* Component)
 {
 	FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UTriggerComponent::ExecuteInteraction, Instigator);
 
@@ -67,17 +67,12 @@ void UTriggerComponent::TriggerActors(AActor* Instigator)
 void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 {
 	/** Call trigger function for all actors in array */
-	for (const FComponentReference& Interactable : InteractablesToTrigger)
+	for (const auto Interactable : InteractablesToTrigger)
 	{
-		if (!Interactable.OtherActor.IsValid()) { continue; }
-		auto* InteractableTrigger = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get()));
-		auto* ToggleInteractableTrigger = Cast<UToggleInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get()));
+		if (!Interactable) { continue; }
+		auto* InteractableTrigger = Interactable->FindComponentByClass<UInteractableComponent>();
+		auto* ToggleInteractableTrigger = Interactable->FindComponentByClass<UToggleInteractableComponent>();
 		auto* ToggleInteractable = GetOwner()->FindComponentByClass<UToggleInteractableComponent>();
-
-		if (InteractableTrigger && bModifyFilters)
-		{
-			InteractableTrigger->InteractFilters.Append(ModifyFilters);
-		}
 
 		if (bCallOnInteract)
 		{
@@ -86,11 +81,11 @@ void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 			{
 				// Since the state of the interactable changes before triggering other actors, the condition has to be inverted
 				if (ToggleInteractable->GetState() != ToggleInteractableTrigger->GetState())
-					InteractableTrigger->OnInteract.Broadcast(Instigator);
+					InteractableTrigger->Interact(Instigator);
 			}
 			else
 			{
-				InteractableTrigger->OnInteract.Broadcast(Instigator);
+				InteractableTrigger->Interact(Instigator);
 			}
 		}
 	}
