@@ -3,7 +3,6 @@
 #include "CoreMinimal.h"
 #include "InventoryComponent.h"
 #include "InventoryInfo.h"
-#include "Interaction/InteractableComponent.h"
 #include "PlayerEquipComponent.generated.h"
 
 class USpringArmComponent;
@@ -19,6 +18,8 @@ class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
 protected:
 	void BeginPlay() override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 public:
 	UPlayerEquipComponent();
 
@@ -27,32 +28,44 @@ public:
 
 	/** Equip the item that is in the slot */
 	UFUNCTION(BlueprintCallable)
-	void EquipItem(const FInventoryContents& Item);
+	void EquipItem(const FItemHandle& Item);
+
+	UFUNCTION(BlueprintCallable)
+	bool HasItemEquipped() const;
 
 	/** Unequip any currently equipped items */
 	UFUNCTION(BlueprintCallable)
 	void UnequipItem();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
-	FInventoryContents GetEquippedItemData() const;
+	FItemHandle GetEquippedItem() const;
 
 	UItemInformation* GetEquippedItemInfo() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
-	AActor* GetEquippedItem() const;
+	AActor* GetEquippedActor() const;
 
+	// Drop the currently equipped item
 	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
 	void DropEquippedItem();
-	
-	UPROPERTY(BlueprintReadWrite, SaveGame)
-	AActor* EquippedActor;
+
+	UFUNCTION(Server, Reliable)
+	void ServerDropEquippedItem();
 
 private:
+
+	virtual void PerformDropEquippedItem();
+	
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	FComponentReference ItemAttachParent;
 
+	// The item that is currently equipped
+	UPROPERTY(Replicated, SaveGame)
+	FItemHandle EquippedItem;
+
+	// Visual representation of the equipped item
 	UPROPERTY()
-	FInventoryContents EquippedItem;
+	AActor* EquippedActor;
 
 	/** Starting offset for equipping an item */
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
@@ -74,9 +87,7 @@ private:
 	USpringArmComponent* ItemAttachSpring = nullptr;
 
 	UPROPERTY()
-	UInventoryComponent* InventoryCompRef = nullptr;
-
-	TArray<FInventoryContents> Inventory;
+	UInventoryComponent* InventoryComponent = nullptr;
 
 	/** Called when there is an inventory update */
 	UFUNCTION()

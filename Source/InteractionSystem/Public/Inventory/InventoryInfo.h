@@ -26,6 +26,11 @@ struct FItemHandle
 	}
 
 	bool operator==(const FItemHandle& ItemHandle) const = default;
+
+	bool IsValid() const
+	{
+		return HandleID != -1;
+	}
 };
 
 /** Holds information about an item */

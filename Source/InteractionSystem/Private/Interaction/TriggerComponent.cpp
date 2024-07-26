@@ -5,7 +5,6 @@
 
 #include "TimerManager.h"
 #include "GameFramework/Actor.h"
-#include "Interaction/ToggleInteractableComponent.h"
 
 // Sets default values for this component's properties
 UTriggerComponent::UTriggerComponent()
@@ -20,24 +19,12 @@ UTriggerComponent::UTriggerComponent()
 void UTriggerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (bAutoManage)
-	{
-		if (UInteractableComponent* Owner = GetOwner()->FindComponentByClass<UInteractableComponent>())
-		{
-			Owner->OnInteract.AddDynamic(this, &UTriggerComponent::TriggerActors);
-		}	
-	}
 }
 
 void UTriggerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 	
-	if (UInteractableComponent* Owner = GetOwner()->FindComponentByClass<UInteractableComponent>())
-	{
-		Owner->OnInteract.RemoveDynamic(this, &UTriggerComponent::TriggerActors);
-	}
 }
 
 void UTriggerComponent::TriggerActors(AActor* Instigator, UPrimitiveComponent* Component)
@@ -70,24 +57,6 @@ void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 	for (const auto Interactable : InteractablesToTrigger)
 	{
 		if (!Interactable) { continue; }
-		auto* InteractableTrigger = Interactable->FindComponentByClass<UInteractableComponent>();
-		auto* ToggleInteractableTrigger = Interactable->FindComponentByClass<UToggleInteractableComponent>();
-		auto* ToggleInteractable = GetOwner()->FindComponentByClass<UToggleInteractableComponent>();
-
-		if (bCallOnInteract)
-		{
-			// For toggle interactables, match the state so they are synced together
-			if (ToggleInteractable && ToggleInteractableTrigger)
-			{
-				// Since the state of the interactable changes before triggering other actors, the condition has to be inverted
-				if (ToggleInteractable->GetState() != ToggleInteractableTrigger->GetState())
-					InteractableTrigger->Interact(Instigator);
-			}
-			else
-			{
-				InteractableTrigger->Interact(Instigator);
-			}
-		}
 	}
 }
 

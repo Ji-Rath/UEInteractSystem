@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlayerInteractComponent.h"
+#include "InteractorComponent.h"
 #include "AreaInteractComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class INTERACTIONSYSTEM_API UAreaInteractComponent : public UPlayerInteractComponent
+class INTERACTIONSYSTEM_API UAreaInteractComponent : public UInteractorComponent
 {
 	GENERATED_BODY()
 	
@@ -14,6 +14,6 @@ public:
 	TArray<AActor*> OverlappingActors;
 
 protected:
-	void HoverInteraction_Implementation(float DeltaTime) override;
+	virtual void UpdateHoverActor() override;
 
 };

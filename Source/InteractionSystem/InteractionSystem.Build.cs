@@ -13,7 +13,8 @@ public class InteractionSystem : ModuleRules
 			new string[]
 			{
 				"Core",
-				"StructUtils"
+				"StructUtils",
+				"DeveloperSettings"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

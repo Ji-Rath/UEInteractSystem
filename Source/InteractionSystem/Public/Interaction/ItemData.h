@@ -32,7 +32,7 @@ public:
 
 	UItemInformation()
 	{
-		DisplayName = FText::FromString(TEXT("NoDesc"));
+		DisplayName = FText::FromString(TEXT("NoName"));
 		Description = FText::FromString(TEXT("NoDesc"));
 		StackableType = EStackableType::NoStacking;
 		MaxStack = 1;

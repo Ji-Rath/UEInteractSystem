@@ -1,15 +1,19 @@
 
 #include "Inventory/PlayerEquipComponent.h"
 
+#include "Pickupable.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Interaction/InteractorComponent.h"
 #include "Interaction/ItemData.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventoryInfo.h"
-#include "Inventory/PickupableComponent.h"
+#include "Inventory/InventorySettings.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 void UPlayerEquipComponent::BeginPlay()
 {
@@ -21,20 +25,27 @@ void UPlayerEquipComponent::BeginPlay()
 		InitialSpringArmOffset = ItemAttachSpring->TargetOffset.Z;
 
 	/** Find inventory component */
-	InventoryCompRef = GetOwner()->FindComponentByClass<UInventoryComponent>();
-	if (InventoryCompRef)
+	InventoryComponent = GetOwner()->FindComponentByClass<UInventoryComponent>();
+	if (InventoryComponent)
 	{
-		InventoryCompRef->OnInventoryChange.AddDynamic(this, &UPlayerEquipComponent::UpdateEquip);
-		InventoryCompRef->GetInventory(OUT Inventory);
+		InventoryComponent->OnInventoryChange.AddDynamic(this, &UPlayerEquipComponent::UpdateEquip);
 	}
 
 	OriginalSocketOffset = ItemAttachSpring->SocketOffset;
+}
+
+void UPlayerEquipComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UPlayerEquipComponent, EquippedItem);
 }
 
 UPlayerEquipComponent::UPlayerEquipComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
+	SetIsReplicatedByDefault(true);
 }
 
 // Called every frame
@@ -43,7 +54,7 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	/** Interp equipped item to move smoothly into view */
-	if (!GetEquippedItemData().ItemHandle.IsValid() && ItemAttachSpring)
+	if (!GetEquippedItem().IsValid() && ItemAttachSpring)
 	{
 		const float CurrentOffset = ItemAttachSpring->TargetOffset.Z;
 		if (!FMath::IsNearlyEqual(CurrentOffset, InitialSpringArmOffset))
@@ -51,19 +62,25 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	}
 }
 
-void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
+void UPlayerEquipComponent::EquipItem(const FItemHandle& Item)
 {
 	UnequipItem();
 	
 	// Update custom class if needed
 	TSubclassOf<AActor> ItemBaseClass = AStaticMeshActor::StaticClass();
-	if (auto* ItemInfo = Item.ItemInformation)
+	auto ItemContents = InventoryComponent->GetItemByHandle(Item);
+	if (auto* ItemInfo = ItemContents.ItemInformation)
 	{
 		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
 	}
 	
 	/** Spawn item and attach it to the player */
 	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, GetOwner()->GetTransform());
+	if (auto SMA = Cast<AStaticMeshActor>(Pickupable))
+	{
+		SMA->SetMobility(EComponentMobility::Movable);
+	}
+	
 	FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
 	
 	Pickupable->AttachToComponent(Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner())), TransformRules);
@@ -75,22 +92,18 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 	if (auto* Mesh = Pickupable->FindComponentByClass<UStaticMeshComponent>())
 	{
 		Mesh->SetSimulatePhysics(false);
-		if (!GetEquippedItemData().ItemHandle.IsValid() && !GetEquippedItemData().ItemInformation->bCustomClass)
+		if (GetEquippedItem().IsValid() && !GetEquippedItemInfo()->bCustomClass)
 		{
 			Mesh->SetStaticMesh(GetEquippedItemInfo()->ItemMesh.Get());
 		}
-	}
-
-	if (UPickupableComponent* PickupComp = Pickupable->FindComponentByClass<UPickupableComponent>())
-	{
-		PickupComp->ItemData = Item;
 	}
 	
 	if (ItemAttachSpring)
 	{
 		ItemAttachSpring->SocketOffset = OriginalSocketOffset;
-		
-		if (auto* ItemInfo = Item.ItemInformation)
+
+		auto ItemInformation = InventoryComponent->GetItemByHandle(Item);
+		if (auto* ItemInfo = ItemContents.ItemInformation)
 		{
 			ItemAttachSpring->SocketOffset += ItemInfo->ItemOffset;
 		}
@@ -98,6 +111,11 @@ void UPlayerEquipComponent::EquipItem(const FInventoryContents& Item)
 		ItemAttachSpring->TargetOffset.Z = ItemUnequipOffset;
 	}
 		
+}
+
+bool UPlayerEquipComponent::HasItemEquipped() const
+{
+	return EquippedItem.IsValid();
 }
 
 void UPlayerEquipComponent::UnequipItem()
@@ -115,20 +133,21 @@ void UPlayerEquipComponent::UnequipItem()
 		{
 			Item->Destroy();
 		}
-		EquippedItem = FInventoryContents();
+		EquippedItem = FItemHandle();
 		if (ItemAttachSpring)
 			ItemAttachSpring->TargetOffset.Z = InitialSpringArmOffset;
 	}
 }
 
-FInventoryContents UPlayerEquipComponent::GetEquippedItemData() const
+FItemHandle UPlayerEquipComponent::GetEquippedItem() const
 {
 	return EquippedItem;
 }
 
 UItemInformation* UPlayerEquipComponent::GetEquippedItemInfo() const
 {
-	if (UItemInformation* ItemInfo = EquippedItem.ItemInformation)
+	auto Item = InventoryComponent->GetItemByHandle(EquippedItem);
+	if (UItemInformation* ItemInfo = Item.ItemInformation)
 	{
 		return ItemInfo;
 	}
@@ -136,14 +155,14 @@ UItemInformation* UPlayerEquipComponent::GetEquippedItemInfo() const
 	
 }
 
-AActor* UPlayerEquipComponent::GetEquippedItem() const
+AActor* UPlayerEquipComponent::GetEquippedActor() const
 {
 	return EquippedActor;
 }
 
 void UPlayerEquipComponent::DropEquippedItem()
 {
-	if (GetEquippedItemData().ItemHandle.IsValid())
+	if (HasItemEquipped())
 	{
 		/** Unequip any items that were binded to the actor */
 		TArray<AActor*> ItemsAttached;
@@ -151,45 +170,59 @@ void UPlayerEquipComponent::DropEquippedItem()
 		FVector ForwardVector = UKismetMathLibrary::GetForwardVector(GetOwner<APawn>()->GetControlRotation());
 		for (AActor* Item : ItemsAttached)
 		{
-			Item->DetachFromActor(FDetachmentTransformRules(EDetachmentRule::KeepWorld, false));
-			Item->SetActorEnableCollision(true);
-
-			/** Re-enable physics and add throwing impulse */
-			UStaticMeshComponent* Mesh = Item->FindComponentByClass<UStaticMeshComponent>();
-			if (Mesh)
-			{
-				Mesh->SetSimulatePhysics(true);
-				Mesh->AddImpulse(ForwardVector * ThrowImpulse);
-			}
+			Item->Destroy();
 		}
-		
-		/** Remove item from inventory */
-		InventoryCompRef->RemoveFromInventory(GetEquippedItemData().ItemHandle);
 
-		EquippedItem = FInventoryContents();
-		EquippedActor = nullptr;
+		PerformDropEquippedItem();
+		
+		if (!GetOwner()->HasAuthority())
+		{
+			ServerDropEquippedItem();
+		}
 	}
+}
+
+void UPlayerEquipComponent::PerformDropEquippedItem()
+{
+	auto InventorySettings = GetDefault<UInventorySettings>();
+	check(InventorySettings);
+	check(!InventorySettings->DefaultPickupable.IsNull());
+	
+	auto Pickupable = GetWorld()->SpawnActorDeferred<APickupable>(InventorySettings->DefaultPickupable.LoadSynchronous(), GetOwner()->GetTransform());
+	Pickupable->Item = GetEquippedItemInfo();
+
+	UGameplayStatics::FinishSpawningActor(Pickupable, GetOwner()->GetTransform());
+
+	/** Remove item from inventory */
+	InventoryComponent->RemoveFromInventory(GetEquippedItem());
+	
+	EquippedItem = FItemHandle();
+	EquippedActor = nullptr;
+}
+
+void UPlayerEquipComponent::ServerDropEquippedItem_Implementation()
+{
+	PerformDropEquippedItem();
 }
 
 void UPlayerEquipComponent::UpdateEquip(const TArray<FInventoryContents>& NewInventory)
 {
-	InventoryCompRef->GetInventory(OUT Inventory);
-	if (true)
+	if (!HasItemEquipped())
 	{
 		/** Equip the item that was just picked up if the player is empty handed */
-		if (EquippedItem.ItemHandle.IsValid() && Inventory.Num() > 0)
-			EquipItem(Inventory[Inventory.Num()-1]);
+		if (EquippedItem.IsValid() && NewInventory.Num() > 0)
+			EquipItem(NewInventory[NewInventory.Num()-1].ItemHandle);
 	}
 	else
 	{
 		/** Ensure that equipped item still exists */
-		//if (InventoryCompRef->FindItemSlot(GetEquippedItemData()) == -1)
+		if (!InventoryComponent->GetItemByHandle(GetEquippedItem()).IsValid())
 			UnequipItem();
 	}
 }
 
 void UPlayerEquipComponent::UseItem()
 {
-	EquippedActor->FindComponentByClass<UPickupableComponent>()->UseItem(GetOwner());
+	GetOwner()->FindComponentByClass<UInteractorComponent>()->InteractWith(EquippedActor);
 }
  

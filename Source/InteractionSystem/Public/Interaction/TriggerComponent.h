@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractableComponent.h"
 #include "Components/ActorComponent.h"
 #include "TriggerComponent.generated.h"
 

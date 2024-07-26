@@ -70,7 +70,6 @@ void UPhysicsGrabComponent::ReleaseComponent()
 		APlayerController* PlayerController = Player->GetController<APlayerController>();
 		if (GrabbedComponent && PlayerController)
 		{
-			OnGrabUpdate.Broadcast(false, nullptr);
 			GrabbedComponent->SetCollisionResponseToChannel(ECC_Pawn, PawnResponse);
 			HandleRef->ReleaseComponent();
 		}
@@ -86,7 +85,6 @@ void UPhysicsGrabComponent::GrabComponent(UStaticMeshComponent* GrabMesh, FHitRe
 		{
 			const FVector CameraLocation = PlayerController->PlayerCameraManager->GetCameraLocation();
 			HandleRef->GrabComponentAtLocationWithRotation(GrabMesh, Hit.BoneName, Hit.ImpactPoint, Hit.GetComponent()->GetComponentRotation());
-			OnGrabUpdate.Broadcast(true, nullptr);
 			HandleRef->SetTargetLocation(Hit.ImpactPoint);
 			PawnResponse = GrabMesh->GetCollisionResponseToChannel(ECC_Pawn);
 			GrabMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);

@@ -1,11 +1,9 @@
 
 #include "Interaction/AreaInteractComponent.h"
-#include "Components/ShapeComponent.h"
-#include "Interaction/InteractableComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
-void UAreaInteractComponent::HoverInteraction_Implementation(float DeltaTime)
+void UAreaInteractComponent::UpdateHoverActor()
 {
 	/** Ensure that the owner is a pawn */
 	APawn* Player = GetOwner<APawn>();
@@ -25,33 +23,12 @@ void UAreaInteractComponent::HoverInteraction_Implementation(float DeltaTime)
 			return FVector::DistSquared(Prim1.GetComponentLocation(), GetOwner()->GetActorLocation()) < FVector::DistSquared(Prim2.GetComponentLocation(), GetOwner()->GetActorLocation());
 		});
 
-		for(UPrimitiveComponent* PrimComp : OverlappingPrimitives)
-		{
-			if (HoverPrimitive == PrimComp) { return; }
-		
-			if (GetInteractComponent(PrimComp))
-			{
-				HoverPrimitive = PrimComp;
-				HoverInteractable = GetInteractComponent(PrimComp);
-				SelectedInteractable = PrimComp;
-				break;
-			}
-		}
-	}
+		auto ClosestPrimitive = OverlappingPrimitives.IsEmpty() ? nullptr : OverlappingPrimitives[0];
 
-	/** Send interaction update when there is no longer an interactable in view */
-	if (HoverInteractable)
-	{
-		/** Set interact message when hovering over an interactable */
-		if (SelectedInteractable == nullptr)
+		if (ClosestPrimitive != HoverPrimitive)
 		{
-			HoverInteractable = nullptr;
-			HoverPrimitive = nullptr;
-			OnUpdateInteract.Broadcast(false, nullptr);
+			OnUpdateHover.Broadcast(ClosestPrimitive);
 		}
-		else if (HoverInteractable->CanInteract(GetOwner(), nullptr))
-		{
-			OnUpdateInteract.Broadcast(true, HoverInteractable);
-		} 
+		HoverPrimitive = ClosestPrimitive;
 	}
 }

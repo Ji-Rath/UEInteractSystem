@@ -7,9 +7,7 @@
 class IInteraction;
 class UPhysicsHandleComponent;
 class AInteractable;
-class UInteractableComponent;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGrabUpdate, bool, bGrab, UInteractableComponent*, Actor);
+class UDEPRECATED_InteractableComponent;
 
 /**
  * Allows a pawn to grab a physics body through the use of a physics handle component
@@ -46,9 +44,6 @@ public:
 	/** Called to grab the in-range physics object */
 	UFUNCTION(BlueprintCallable, Category = "PhysicsGrab")
 	void PhysicsInteract();
-
-	UPROPERTY()
-	FGrabUpdate OnGrabUpdate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Physics|Grab")
 	bool bCanGrab = true;
