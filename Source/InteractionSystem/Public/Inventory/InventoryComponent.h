@@ -30,10 +30,6 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	/** Drop an item from selected slot */
-	UFUNCTION(BlueprintCallable, Category="Inventory")
-	void DropItem(const FItemHandle& Item);
-
 	/** Remove an item from current inventory */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
 	virtual void RemoveFromInventory(const FItemHandle& ItemHandle);

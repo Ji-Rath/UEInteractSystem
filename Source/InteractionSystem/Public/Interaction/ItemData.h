@@ -56,23 +56,23 @@ public:
 	EStackableType StackableType;
 
 	// Whether the item uses a custom class or not
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual")
 	bool bCustomClass = false;
 
 	// The custom actor used for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh", meta=(EditCondition="bCustomClass == true", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual", meta=(EditCondition="bCustomClass == true", EditConditionHides))
 	TSubclassOf<AActor> CustomClass;
 
 	// The mesh used for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mesh", meta=(EditCondition="bCustomClass == false", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual", meta=(EditCondition="bCustomClass == false", EditConditionHides))
 	TSoftObjectPtr<UStaticMesh> ItemMesh;
 
 	// The max stack possible for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
 	int32 MaxStack;
 
 	// Page information, each array element signifies a page
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="ItemType == EItemType::Readable", EditConditionHides, MultiLine="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(MultiLine="true"))
 	TArray<FText> PageData;
 
 	// Arbitrary vector value, used in the interaction system to align equipped items so they fit the screen properly

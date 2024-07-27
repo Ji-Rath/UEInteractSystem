@@ -29,16 +29,13 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UInventoryComponent, Inventory);
 }
 
-void UInventoryComponent::DropItem(const FItemHandle& Item)
-{
-}
-
 void UInventoryComponent::RemoveFromInventory(const FItemHandle& ItemHandle)
 {
 	int Index = Inventory.IndexOfByKey(ItemHandle);
 	if (Index != INDEX_NONE)
 	{
 		Inventory.RemoveAtSwap(Index);
+		OnRep_Inventory();
 	}
 }
 
