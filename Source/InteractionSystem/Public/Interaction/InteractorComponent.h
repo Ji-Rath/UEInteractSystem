@@ -8,7 +8,7 @@
 
 class UDEPRECATED_InteractableComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHover, TWeakObjectPtr<UPrimitiveComponent>, Component);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHover, const TWeakObjectPtr<UPrimitiveComponent>&, Component);
 
 /**
  * Allows the player to interact with interactables, executing functionality based on what was interacted with
