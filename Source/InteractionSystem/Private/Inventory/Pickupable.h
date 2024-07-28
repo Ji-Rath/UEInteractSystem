@@ -22,6 +22,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Pickupable")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn), Category="Pickupable")
 	UItemInformation* Item;
 };
