@@ -103,6 +103,12 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 	return false;
 }
 
+void UInventoryComponent::EmptyInventory()
+{
+	Inventory.Empty();
+	OnRep_Inventory();
+}
+
 bool UInventoryComponent::CanAddToInventory(const FInventoryContents& Item) const
 {
 	return true;

@@ -53,6 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
 	virtual bool AddToInventory(const FInventoryContents& Item, FItemHandle& OutItemHandle);
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
+	virtual void EmptyInventory();
+
 	//** Whether an item can be added to the inventory */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	virtual bool CanAddToInventory(const FInventoryContents& Item) const;
