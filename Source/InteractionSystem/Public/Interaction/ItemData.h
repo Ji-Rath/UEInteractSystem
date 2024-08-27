@@ -22,6 +22,15 @@ enum class EStackableType
 	InfiniteStack
 };
 
+USTRUCT(BlueprintType)
+struct FDataAssetWrapper
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UDataAsset* DataAsset;
+};
+
 /** Holds information about an item */
 UCLASS(BlueprintType)
 class INTERACTIONSYSTEM_API UItemInformation : public UDataAsset
@@ -71,12 +80,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
 	int32 MaxStack;
 
-	// Page information, each array element signifies a page
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(MultiLine="true"))
-	TArray<FText> PageData;
-
 	// Arbitrary vector value, used in the interaction system to align equipped items so they fit the screen properly
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Optional")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual|Optional")
 	FVector ItemOffset;
 	
 	bool CanStack(int Count) const

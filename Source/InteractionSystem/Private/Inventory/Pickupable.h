@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Pickupable.generated.h"
 
+class UProjectileMovementComponent;
 class UItemInformation;
 
 UCLASS()
@@ -24,4 +25,7 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn), Category="Pickupable")
 	UItemInformation* Item;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UProjectileMovementComponent* ProjectileMovement;
 };

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InventoryInfo.h"
 #include "Components/ActorComponent.h"
 #include "InventoryComponent.generated.h"
 
@@ -67,7 +68,10 @@ public:
 	void SetInventory(const TArray<FInventoryContents>& NewInventory);
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	FItemHandle GenerateUniqueHandle() const;
+	static FItemHandle GenerateUniqueHandle();
+
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	static FInventoryContents FindItemByHandle(const FItemHandle& ItemHandle);
 
 	UFUNCTION(BlueprintCallable, Category="Inventory", meta=(AutoCreateRefTerm="DynamicData"))
 	virtual FInventoryContents GenerateItem(UItemInformation* ItemInfo, const FInstancedStruct& DynamicData, int Count = 1) const;

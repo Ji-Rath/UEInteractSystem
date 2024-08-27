@@ -5,9 +5,12 @@
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Interaction/InteractorComponent.h"
+#include "Interaction/ItemAction.h"
 #include "Interaction/ItemData.h"
+#include "Interaction/Usable.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventoryInfo.h"
@@ -187,11 +190,14 @@ void UPlayerEquipComponent::PerformDropEquippedItem()
 	auto InventorySettings = GetDefault<UInventorySettings>();
 	check(InventorySettings);
 	check(!InventorySettings->DefaultPickupable.IsNull());
-	
-	auto Pickupable = GetWorld()->SpawnActorDeferred<APickupable>(InventorySettings->DefaultPickupable.LoadSynchronous(), GetOwner()->GetTransform());
-	Pickupable->Item = GetEquippedItemInfo();
 
-	UGameplayStatics::FinishSpawningActor(Pickupable, GetOwner()->GetTransform());
+	FTransform PickupableTransform = GetOwner()->GetTransform();
+	PickupableTransform.SetLocation(PickupableTransform.GetLocation() + GetOwner()->GetActorForwardVector() * 100.f);
+	auto Pickupable = GetWorld()->SpawnActorDeferred<APickupable>(InventorySettings->DefaultPickupable.LoadSynchronous(), PickupableTransform);
+	Pickupable->Item = GetEquippedItemInfo();
+	Pickupable->ProjectileMovement->Velocity = Pickupable->GetActorForwardVector() * ThrowImpulse;
+
+	UGameplayStatics::FinishSpawningActor(Pickupable, PickupableTransform);
 
 	/** Remove item from inventory */
 	InventoryComponent->RemoveFromInventory(GetEquippedItem());
@@ -223,6 +229,18 @@ void UPlayerEquipComponent::UpdateEquip(const TArray<FInventoryContents>& NewInv
 
 void UPlayerEquipComponent::UseItem()
 {
-	GetOwner()->FindComponentByClass<UInteractorComponent>()->InteractWith(EquippedActor);
+	if (!EquippedItem.IsValid()) { return; }
+
+	auto Item = UInventoryComponent::FindItemByHandle(EquippedItem);
+	auto ItemInfo = Item.GetItemInformation<UUsable>();
+	if (!ItemInfo) { return; }
+	
+	auto Action = ItemInfo->Action;
+	if (!Action) { return; }
+
+	if (UItemAction* ActionObject = NewObject<UItemAction>(GetOwner(), Action))
+	{
+		ActionObject->Execute(EquippedItem);
+	}
 }
  

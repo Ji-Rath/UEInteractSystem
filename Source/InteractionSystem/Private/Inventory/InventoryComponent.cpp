@@ -11,6 +11,8 @@
 
 DEFINE_LOG_CATEGORY(LogInventory);
 
+static uint64 IDNum = 0;
+
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
@@ -125,25 +127,23 @@ void UInventoryComponent::SetInventory(const TArray<FInventoryContents>& NewInve
 	OnRep_Inventory();
 }
 
-FItemHandle UInventoryComponent::GenerateUniqueHandle() const
+FItemHandle UInventoryComponent::GenerateUniqueHandle()
 {
-	int UniqueID = 0;
-	bool bIDTaken = true;
+	return FItemHandle(IDNum++);
+}
 
-	while (bIDTaken)
+FInventoryContents UInventoryComponent::FindItemByHandle(const FItemHandle& ItemHandle)
+{
+	for(TObjectIterator<UInventoryComponent> Itr; Itr; ++Itr)
 	{
-		bIDTaken = false;
-		for (const auto& InventoryContents : Inventory)
-		{
-			if (InventoryContents.ItemHandle.HandleID == UniqueID)
-			{
-				UniqueID++;
-				bIDTaken = true;
-				break;
-			}
-		}
+		// Skip template object
+		if (Itr->IsTemplate()) { continue; }
+		
+		auto Item = Itr->GetItemByHandle(ItemHandle);
+		if (Item.IsValid()) { return Item; }
 	}
-	return FItemHandle(UniqueID);
+	
+	return FInventoryContents();
 }
 
 FInventoryContents UInventoryComponent::GenerateItem(UItemInformation* ItemInfo, const FInstancedStruct& DynamicData,
