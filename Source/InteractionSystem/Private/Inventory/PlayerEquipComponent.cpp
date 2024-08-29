@@ -18,6 +18,14 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
+void UPlayerEquipComponent::ItemAdded(const FInventoryContents& Item)
+{
+	if (!HasItemEquipped())
+	{
+		EquipItem(Item.ItemHandle);
+	}
+}
+
 void UPlayerEquipComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -32,6 +40,7 @@ void UPlayerEquipComponent::BeginPlay()
 	if (InventoryComponent)
 	{
 		InventoryComponent->OnInventoryChange.AddDynamic(this, &UPlayerEquipComponent::UpdateEquip);
+		InventoryComponent->OnItemAdd.AddDynamic(this, &ThisClass::ItemAdded);
 	}
 
 	OriginalSocketOffset = ItemAttachSpring->SocketOffset;
@@ -213,18 +222,9 @@ void UPlayerEquipComponent::ServerDropEquippedItem_Implementation()
 
 void UPlayerEquipComponent::UpdateEquip(const TArray<FInventoryContents>& NewInventory)
 {
-	if (!HasItemEquipped())
-	{
-		/** Equip the item that was just picked up if the player is empty handed */
-		if (EquippedItem.IsValid() && NewInventory.Num() > 0)
-			EquipItem(NewInventory[NewInventory.Num()-1].ItemHandle);
-	}
-	else
-	{
-		/** Ensure that equipped item still exists */
-		if (!InventoryComponent->GetItemByHandle(GetEquippedItem()).IsValid())
-			UnequipItem();
-	}
+	/** Ensure that equipped item still exists */
+	if (!InventoryComponent->GetItemByHandle(GetEquippedItem()).IsValid())
+		UnequipItem();
 }
 
 void UPlayerEquipComponent::UseItem()

@@ -33,17 +33,18 @@ void UInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 void UInventoryComponent::RemoveFromInventory(const FItemHandle& ItemHandle)
 {
-	int Index = Inventory.IndexOfByKey(ItemHandle);
+	int Index = Inventory.Items.IndexOfByKey(ItemHandle);
 	if (Index != INDEX_NONE)
 	{
-		Inventory.RemoveAtSwap(Index);
+		Inventory.Items.RemoveAtSwap(Index);
 		OnRep_Inventory();
+		Inventory.MarkArrayDirty();
 	}
 }
 
 FInventoryContents UInventoryComponent::GetItemByHandle(const FItemHandle& ItemHandle) const
 {
-	if (auto ItemContents = Inventory.FindByKey(ItemHandle))
+	if (auto ItemContents = Inventory.Items.FindByKey(ItemHandle))
 	{
 		return *ItemContents;
 	}
@@ -53,7 +54,7 @@ FInventoryContents UInventoryComponent::GetItemByHandle(const FItemHandle& ItemH
 
 FItemHandle UInventoryComponent::FindItemByData(const UItemInformation* ItemData) const
 {
-	if (auto Item = Inventory.FindByKey(ItemData))
+	if (auto Item = Inventory.Items.FindByKey(ItemData))
 	{
 		return Item->ItemHandle;
 	}
@@ -67,7 +68,7 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 	
 	auto CountToAdd = Item.Count;
 	
-	for (auto& InventoryContents : Inventory)
+	for (auto& InventoryContents : Inventory.Items)
 	{
 		// If the item is already in the inventory
 		if (InventoryContents.ItemInformation == Item.ItemInformation)
@@ -77,6 +78,8 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 			{
 				UE_LOG(LogInventory, Log, TEXT("Stacked item %s in inventory"), *Item.ItemInformation->DisplayName.ToString());
 				CountToAdd = InventoryContents.AddToStack(Item.Count);
+				Inventory.MarkItemDirty(InventoryContents);
+				OnItemChange.Broadcast(InventoryContents);
 				OnRep_Inventory();
 				
 				if (CountToAdd == 0)
@@ -92,9 +95,11 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 	if (CanAddToInventory(Item))
 	{
 		UE_LOG(LogInventory, Log, TEXT("Added item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
-		Inventory.Emplace(Item);
+		auto& ItemAdded = Inventory.Items.Emplace_GetRef(Item);
 		OutItemHandle = Item.ItemHandle;
 		OnRep_Inventory();
+		OnItemAdd.Broadcast(ItemAdded);
+		Inventory.MarkItemDirty(ItemAdded);
 		return true;
 	}
 	else
@@ -107,7 +112,8 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 
 void UInventoryComponent::EmptyInventory()
 {
-	Inventory.Empty();
+	Inventory.Items.Empty();
+	Inventory.MarkArrayDirty();
 	OnRep_Inventory();
 }
 
@@ -118,12 +124,13 @@ bool UInventoryComponent::CanAddToInventory(const FInventoryContents& Item) cons
 
 void UInventoryComponent::GetInventory(TArray<FInventoryContents>& OutInventory) const
 {
-	OutInventory = Inventory;
+	OutInventory = Inventory.Items;
 }
 
 void UInventoryComponent::SetInventory(const TArray<FInventoryContents>& NewInventory)
 {
-	Inventory = NewInventory;
+	Inventory.Items = NewInventory;
+	Inventory.MarkArrayDirty();
 	OnRep_Inventory();
 }
 
@@ -157,6 +164,6 @@ FInventoryContents UInventoryComponent::GenerateItem(UItemInformation* ItemInfo,
 
 void UInventoryComponent::OnRep_Inventory()
 {
-	OnInventoryChange.Broadcast(Inventory);
+	OnInventoryChange.Broadcast(Inventory.Items);
 }
 

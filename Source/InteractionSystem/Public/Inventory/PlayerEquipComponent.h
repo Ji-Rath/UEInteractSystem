@@ -16,6 +16,8 @@ class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
 	GENERATED_BODY()
 	
 protected:
+	UFUNCTION()
+	void ItemAdded(const FInventoryContents& Item);
 	void BeginPlay() override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

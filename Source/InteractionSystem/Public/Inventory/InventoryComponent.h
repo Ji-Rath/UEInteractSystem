@@ -11,7 +11,12 @@ struct FInstancedStruct;
 class UItemInformation;
 struct FItemHandle;
 struct FInventoryContents;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryChange, const TArray<FInventoryContents>&, NewInventory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemAdd, const FInventoryContents&, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemRemove, const FInventoryContents&, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemChange, const FInventoryContents&, Item);
+
 DECLARE_LOG_CATEGORY_EXTERN(LogInventory, Log, All);
 
 /**
@@ -78,11 +83,20 @@ public:
 	
 protected:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Inventory, Category="Inventory")
-	TArray<FInventoryContents> Inventory;
+	FInventoryContainer Inventory;
 	
 	UFUNCTION()
 	virtual void OnRep_Inventory();
 public:
 	UPROPERTY(BlueprintAssignable)
 	FInventoryChange OnInventoryChange;
+
+	UPROPERTY(BlueprintAssignable)
+	FItemAdd OnItemAdd;
+
+	UPROPERTY(BlueprintAssignable)
+	FItemChange OnItemChange;
+
+	UPROPERTY(BlueprintAssignable)
+	FItemRemove OnItemRemove;
 };

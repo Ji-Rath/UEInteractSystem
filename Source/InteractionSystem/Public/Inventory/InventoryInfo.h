@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "InstancedStruct.h"
+#include "Net/Serialization/FastArraySerializer.h"
 #include "InventoryInfo.generated.h"
 
 class UItemInformation;
@@ -35,7 +36,7 @@ struct FItemHandle
 
 /** Holds information about an item */
 USTRUCT(Blueprintable, BlueprintType)
-struct FInventoryContents
+struct FInventoryContents : public FFastArraySerializerItem
 {
 	GENERATED_BODY()
 
@@ -120,4 +121,32 @@ struct FInventoryContents
 	{
 		return Count > 0 && ItemInformation;
 	}
+	
+	void PreReplicatedRemove(const FFastArraySerializer& Serializer);
+	void PostReplicatedAdd(const FFastArraySerializer& Serializer);
+	void PostReplicatedChange(const FFastArraySerializer& Serializer);
+};
+
+USTRUCT(Blueprintable, BlueprintType)
+struct FInventoryContainer : public FFastArraySerializer
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<FInventoryContents> Items;
+	
+	/** Step 4: Copy this, replace example with your names */
+	bool NetDeltaSerialize(FNetDeltaSerializeInfo & DeltaParms)
+	{
+		return FastArrayDeltaSerialize<FInventoryContents>(Items, DeltaParms, *this);
+	}
+};
+
+template<>
+struct TStructOpsTypeTraits<FInventoryContainer> : public TStructOpsTypeTraitsBase2<FInventoryContainer>
+{
+	enum
+	{
+		WithNetDeltaSerializer = true,
+	};
 };

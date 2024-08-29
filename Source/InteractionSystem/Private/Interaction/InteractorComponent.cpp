@@ -48,7 +48,8 @@ void UInteractorComponent::UpdateHoverActor()
 	GetWorld()->LineTraceSingleByChannel(Hit, CameraLocation, CameraLocation + Distance, ECC_Visibility, QueryParams);
 	
 	// Check if hit is different from our current hover
-	if (HoverPrimitive != Hit.Component)
+	// This also checks if the actor suddenly disappears (like when being picked up)
+	if (HoverPrimitive != Hit.Component || HoverPrimitive.IsStale())
 	{
 		OnUpdateHover.Broadcast(Hit.Component);
 	}
