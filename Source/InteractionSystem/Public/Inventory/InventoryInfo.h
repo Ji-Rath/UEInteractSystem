@@ -6,6 +6,7 @@
 #include "Engine/DataTable.h"
 #include "InstancedStruct.h"
 #include "Net/Serialization/FastArraySerializer.h"
+#include "StructUtils/InstancedStruct.h"
 #include "InventoryInfo.generated.h"
 
 class UItemInformation;
