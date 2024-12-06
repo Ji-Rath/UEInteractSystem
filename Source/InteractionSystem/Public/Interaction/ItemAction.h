@@ -22,5 +22,7 @@ public:
 
 	virtual UWorld* GetWorld() const override;
 
+#if WITH_EDITOR
 	virtual bool ImplementsGetWorld() const override;
+#endif
 };

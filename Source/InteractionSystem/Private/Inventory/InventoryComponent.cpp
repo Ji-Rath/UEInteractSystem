@@ -95,8 +95,12 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 	if (CanAddToInventory(Item))
 	{
 		UE_LOG(LogInventory, Log, TEXT("Added item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
-		auto& ItemAdded = Inventory.Items.Emplace_GetRef(Item);
-		OutItemHandle = Item.ItemHandle;
+		
+		auto ItemCopy = Item;
+		ItemCopy.OwnerComp = this;
+		
+		auto& ItemAdded = Inventory.Items.Emplace_GetRef(ItemCopy);
+		OutItemHandle = ItemAdded.ItemHandle;
 		OnRep_Inventory();
 		OnItemAdd.Broadcast(ItemAdded);
 		Inventory.MarkItemDirty(ItemAdded);

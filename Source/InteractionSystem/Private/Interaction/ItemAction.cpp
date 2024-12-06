@@ -21,7 +21,9 @@ UWorld* UItemAction::GetWorld() const
 	return GetOuter()->GetWorld();
 }
 
+#if WITH_EDITOR
 bool UItemAction::ImplementsGetWorld() const
 {
 	return true;
 }
+#endif

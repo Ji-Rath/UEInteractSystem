@@ -56,6 +56,9 @@ struct FInventoryContents : public FFastArraySerializerItem
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FInstancedStruct DynamicData;
 
+	UPROPERTY()
+	TObjectPtr<UActorComponent> OwnerComp;
+
 	template<typename T>
 	T* GetItemInformation() const
 	{

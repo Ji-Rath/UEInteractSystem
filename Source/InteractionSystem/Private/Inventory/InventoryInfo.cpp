@@ -14,18 +14,18 @@ int FInventoryContents::AddToStack(int Amount)
 
 void FInventoryContents::PreReplicatedRemove(const FFastArraySerializer& Serializer)
 {
-	auto InvComp = Cast<UInventoryComponent>(Serializer.OwningObject);
+	auto InvComp = Cast<UInventoryComponent>(OwnerComp);
 	InvComp->OnItemRemove.Broadcast(*this);
 }
 
 void FInventoryContents::PostReplicatedAdd(const FFastArraySerializer& Serializer)
 {
-	auto InvComp = Cast<UInventoryComponent>(Serializer.OwningObject);
+	auto InvComp = Cast<UInventoryComponent>(OwnerComp);
 	InvComp->OnItemAdd.Broadcast(*this);
 }
 
 void FInventoryContents::PostReplicatedChange(const FFastArraySerializer& Serializer)
 {
-	auto InvComp = Cast<UInventoryComponent>(Serializer.OwningObject);
+	auto InvComp = Cast<UInventoryComponent>(OwnerComp);
 	InvComp->OnItemChange.Broadcast(*this);
 }
