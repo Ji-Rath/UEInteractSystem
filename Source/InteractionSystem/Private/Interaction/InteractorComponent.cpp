@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Interaction/Interactable.h"
 
+DEFINE_LOG_CATEGORY(LogInteractor)
 
 // Sets default values for this component's properties
 UInteractorComponent::UInteractorComponent()
@@ -72,6 +73,7 @@ void UInteractorComponent::ServerInteract_Implementation(USceneComponent* Compon
 
 void UInteractorComponent::Interact()
 {
+	UE_LOG(LogInteractor, Verbose, TEXT("Attempting to interact with: %s"), *GetNameSafe(HoverPrimitive.Get()));
 	if (HoverPrimitive.IsValid())
 	{
 		/** Trigger interacted actor */
@@ -81,8 +83,16 @@ void UInteractorComponent::Interact()
 
 void UInteractorComponent::InteractWith(USceneComponent* Component)
 {
-	if (!Component->GetOwner()->Implements<UInteractable>()) { return; }
-	if (!IInteractable::Execute_CanInteract(Component->GetOwner(), GetOwner(), Component)) { return; }
+	if (!Component->GetOwner()->Implements<UInteractable>())
+	{
+		UE_LOG(LogInteractor, Verbose, TEXT("Could not interact with %s! Actor does not implement IInteractable"), *GetNameSafe(HoverPrimitive.Get()));
+		return;
+	}
+	if (!IInteractable::Execute_CanInteract(Component->GetOwner(), GetOwner(), Component))
+	{
+		UE_LOG(LogInteractor, Verbose, TEXT("Could not interact with %s! CanInteract() returned false"), *GetNameSafe(HoverPrimitive.Get()));
+		return;
+	}
 	
 	PerformInteraction(Component);
 

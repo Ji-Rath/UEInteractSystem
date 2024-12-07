@@ -6,6 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "InteractorComponent.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogInteractor, Log, All);
+
 class UDEPRECATED_InteractableComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHover, const TWeakObjectPtr<UPrimitiveComponent>&, Component);
