@@ -7,9 +7,32 @@
 
 int FInventoryContents::AddToStack(int Amount)
 {
+	if (!ensureMsgf(Amount > 0, TEXT("Amount cannot be negative!"))) { return Amount; }
+	
 	int Remaining = (Count + Amount) - ItemInformation->GetMaxStack();
-	Count = FMath::Min(Amount, ItemInformation->GetMaxStack());
+	Count = FMath::Clamp(Count + Amount, 0, ItemInformation->GetMaxStack());
 	return FMath::Max(Remaining, 0);
+}
+
+int FInventoryContents::RemoveFromStack(int Amount)
+{
+	if (!ensureMsgf(Amount > 0, TEXT("Amount cannot be negative!"))) { return Amount; }
+	
+	int Remaining = FMath::Min(Count - Amount, 0);
+	Count = FMath::Clamp(Count - Amount, 0, ItemInformation->GetMaxStack());
+	return FMath::Abs(Remaining);
+}
+
+int FInventoryContents::FixCount()
+{
+	int Remainder = FMath::Max(Count - ItemInformation->GetMaxStack(), 0);
+	Count = FMath::Clamp(Count, 0, ItemInformation->GetMaxStack());
+	return Remainder;
+}
+
+bool FInventoryContents::HasRoom() const
+{
+	return Count < ItemInformation->GetMaxStack();
 }
 
 void FInventoryContents::PreReplicatedRemove(const FFastArraySerializer& Serializer)

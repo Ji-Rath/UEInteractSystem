@@ -36,9 +36,16 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	/** Remove an item from current inventory */
+	/** Completely remove an item from current inventory */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
 	virtual void RemoveFromInventory(const FItemHandle& ItemHandle);
+
+	/**
+	 * Removes a specified item (and amount) from the inventory
+	 * @param Item The item type and amount to remove
+	 */
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
+	virtual void RemoveItemFromInventory(const FInventoryContents& Item);
 
 	/**
 	 * Find the first slot containing Item

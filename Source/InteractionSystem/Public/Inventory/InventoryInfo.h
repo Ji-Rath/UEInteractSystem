@@ -27,7 +27,10 @@ struct FItemHandle
 		return HandleID != -1;
 	}
 
-	bool operator==(const FItemHandle& ItemHandle) const = default;
+	bool operator==(const FItemHandle& ItemHandle) const
+	{
+		return HandleID == ItemHandle.HandleID;
+	}
 
 	bool IsValid() const
 	{
@@ -120,6 +123,9 @@ struct FInventoryContents : public FFastArraySerializerItem
 	 * @return The amount that could not be added to the stack
 	 */
 	int AddToStack(int Amount);
+	int RemoveFromStack(int Amount);
+	int FixCount();
+	bool HasRoom() const;
 
 	bool IsValid() const
 	{

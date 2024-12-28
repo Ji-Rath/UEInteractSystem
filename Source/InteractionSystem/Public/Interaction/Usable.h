@@ -4,23 +4,29 @@
 
 #include "CoreMinimal.h"
 #include "Interaction/ItemData.h"
+#include "StructUtils/InstancedStruct.h"
 #include "Usable.generated.h"
+
+struct FItemHandle;
+
+USTRUCT(NotBlueprintType)
+struct FUsableAction
+{
+	GENERATED_BODY()
+public:
+	virtual void ExecuteAction(const FItemHandle& ItemHandle, AActor* Actor) const {};
+	virtual void FinishExecuteAction(const FItemHandle& ItemHandle, AActor* Actor) const {};
+};
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class INTERACTIONSYSTEM_API UUsable : public UItemInformation
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
-	TSubclassOf<UObject> Action;
-
-	template <typename T>
-	T* GetAction()
-	{
-		return Cast<T>(Action);
-	}
+	TInstancedStruct<FUsableAction> ActionConfig;
 };

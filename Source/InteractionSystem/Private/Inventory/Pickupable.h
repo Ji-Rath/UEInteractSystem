@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "InteractionSystem/Public/Interaction/Interactable.h"
 #include "Pickupable.generated.h"
 
 class UProjectileMovementComponent;
 class UItemInformation;
 
-UCLASS()
-class INTERACTIONSYSTEM_API APickupable : public AActor
+UCLASS(Abstract)
+class INTERACTIONSYSTEM_API APickupable : public AActor, public IInteractable
 {
 	GENERATED_BODY()
 

@@ -18,6 +18,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
+DECLARE_LOG_CATEGORY_CLASS(LogPlayerEquip, Log, All);
+
 void UPlayerEquipComponent::ItemAdded(const FInventoryContents& Item)
 {
 	if (!HasItemEquipped())
@@ -29,11 +31,14 @@ void UPlayerEquipComponent::ItemAdded(const FInventoryContents& Item)
 void UPlayerEquipComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	/** Add spring arm component */
 	ItemAttachSpring = Cast<USpringArmComponent>(ItemAttachParent.GetComponent(GetOwner()));
 	if (ItemAttachSpring)
+	{
+		OriginalSocketOffset = ItemAttachSpring->SocketOffset;
 		InitialSpringArmOffset = ItemAttachSpring->TargetOffset.Z;
+	}
 
 	/** Find inventory component */
 	InventoryComponent = GetOwner()->FindComponentByClass<UInventoryComponent>();
@@ -42,8 +47,6 @@ void UPlayerEquipComponent::BeginPlay()
 		InventoryComponent->OnInventoryChange.AddDynamic(this, &UPlayerEquipComponent::UpdateEquip);
 		InventoryComponent->OnItemAdd.AddDynamic(this, &ThisClass::ItemAdded);
 	}
-
-	OriginalSocketOffset = ItemAttachSpring->SocketOffset;
 }
 
 void UPlayerEquipComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -74,26 +77,37 @@ void UPlayerEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	}
 }
 
-void UPlayerEquipComponent::EquipItem(const FItemHandle& Item)
+void UPlayerEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 {
+	if (!Item.IsValid())
+	{
+		UE_LOG(LogPlayerEquip, Error, TEXT("%s: EquipItem_Implementation: Item is invalid"), *GetOwner()->GetName());
+		return;
+	}
+	
 	UnequipItem();
 	
 	// Update custom class if needed
 	TSubclassOf<AActor> ItemBaseClass = AStaticMeshActor::StaticClass();
 	auto ItemContents = InventoryComponent->GetItemByHandle(Item);
+	if (!ItemContents.IsValid())
+	{
+		UE_LOG(LogPlayerEquip, Error, TEXT("%s: Item does not exist!"), *GetOwner()->GetName());
+	}
 	if (auto* ItemInfo = ItemContents.ItemInformation)
 	{
 		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
 	}
 	
 	/** Spawn item and attach it to the player */
-	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, GetOwner()->GetTransform());
+	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, ItemContents.ItemInformation->ItemOffset);
+	
 	if (auto SMA = Cast<AStaticMeshActor>(Pickupable))
 	{
 		SMA->SetMobility(EComponentMobility::Movable);
 	}
 	
-	FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::KeepWorld, true);
+	FAttachmentTransformRules TransformRules = FAttachmentTransformRules(EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, true);
 	
 	Pickupable->AttachToComponent(Cast<USceneComponent>(ItemAttachParent.GetComponent(GetOwner())), TransformRules);
 	Pickupable->SetActorEnableCollision(false);
@@ -115,10 +129,6 @@ void UPlayerEquipComponent::EquipItem(const FItemHandle& Item)
 		ItemAttachSpring->SocketOffset = OriginalSocketOffset;
 
 		auto ItemInformation = InventoryComponent->GetItemByHandle(Item);
-		if (auto* ItemInfo = ItemContents.ItemInformation)
-		{
-			ItemAttachSpring->SocketOffset += ItemInfo->ItemOffset;
-		}
 		
 		ItemAttachSpring->TargetOffset.Z = ItemUnequipOffset;
 	}
@@ -130,7 +140,7 @@ bool UPlayerEquipComponent::HasItemEquipped() const
 	return EquippedItem.IsValid();
 }
 
-void UPlayerEquipComponent::UnequipItem()
+void UPlayerEquipComponent::UnequipItem_Implementation()
 {
 	UActorComponent* AttachedComp = ItemAttachParent.GetComponent(GetOwner());
 	if (!AttachedComp) { return; }
@@ -235,12 +245,23 @@ void UPlayerEquipComponent::UseItem()
 	auto ItemInfo = Item.GetItemInformation<UUsable>();
 	if (!ItemInfo) { return; }
 	
-	auto Action = ItemInfo->Action;
+	auto Action = ItemInfo->ActionConfig.GetPtr<FUsableAction>();
 	if (!Action) { return; }
+	
+	Action->ExecuteAction(EquippedItem, GetOwner());
+}
 
-	if (UItemAction* ActionObject = NewObject<UItemAction>(GetOwner(), Action))
-	{
-		ActionObject->Execute(EquippedItem);
-	}
+void UPlayerEquipComponent::FinishUseItem()
+{
+	if (!EquippedItem.IsValid()) { return; }
+
+	auto Item = UInventoryComponent::FindItemByHandle(EquippedItem);
+	auto ItemInfo = Item.GetItemInformation<UUsable>();
+	if (!ItemInfo) { return; }
+	
+	auto Action = ItemInfo->ActionConfig.GetPtr<FUsableAction>();
+	if (!Action) { return; }
+	
+	Action->FinishExecuteAction(EquippedItem, GetOwner());
 }
  

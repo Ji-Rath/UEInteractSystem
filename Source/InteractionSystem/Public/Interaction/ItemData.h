@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Engine/DataTable.h"
+#include "StructUtils/InstancedStruct.h"
 #include "ItemData.generated.h"
 
 class UStaticMesh;
@@ -32,7 +33,7 @@ struct FDataAssetWrapper
 };
 
 /** Holds information about an item */
-UCLASS(BlueprintType)
+UCLASS(Blueprintable, BlueprintType)
 class INTERACTIONSYSTEM_API UItemInformation : public UDataAsset
 {
 	GENERATED_BODY()
@@ -77,12 +78,12 @@ public:
 	TSoftObjectPtr<UStaticMesh> ItemMesh;
 
 	// The max stack possible for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="StackableType == Stackable"))
 	int32 MaxStack;
 
 	// Arbitrary vector value, used in the interaction system to align equipped items so they fit the screen properly
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual|Optional")
-	FVector ItemOffset;
+	FTransform ItemOffset;
 	
 	bool CanStack(int Count) const
 	{
@@ -94,13 +95,13 @@ public:
 		switch(StackableType)
 		{
 			case EStackableType::NoStacking:
-				return 0;
+				return 1;
 			case EStackableType::Stackable:
 				return MaxStack;
 			case EStackableType::InfiniteStack:
 				return INT_MAX;
 			default:
-				return 0;
+				return 1;
 		}
 	}
 };

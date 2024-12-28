@@ -14,7 +14,7 @@ UCLASS(Blueprintable, ClassGroup=(Interactable), meta=(BlueprintSpawnableCompone
 class INTERACTIONSYSTEM_API UPlayerEquipComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	
+
 protected:
 	UFUNCTION()
 	void ItemAdded(const FInventoryContents& Item);
@@ -29,14 +29,14 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	/** Equip the item that is in the slot */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void EquipItem(const FItemHandle& Item);
 
 	UFUNCTION(BlueprintCallable)
 	bool HasItemEquipped() const;
 
 	/** Unequip any currently equipped items */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void UnequipItem();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "PlayerEquip")
@@ -98,6 +98,9 @@ private:
 	/** Called to use an item on an interactable */
 	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
 	void UseItem();
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
+	void FinishUseItem();
 
 	UPROPERTY()
 	FVector OriginalSocketOffset;

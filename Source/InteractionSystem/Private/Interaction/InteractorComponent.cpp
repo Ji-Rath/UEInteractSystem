@@ -78,6 +78,7 @@ void UInteractorComponent::Interact()
 	{
 		/** Trigger interacted actor */
 		InteractWith(HoverPrimitive.Get());
+		UE_LOG(LogInteractor, Log, TEXT("%s: Tried interacting with: %s - %s"), *GetNameSafe(this), *GetNameSafe(HoverPrimitive.Get()), *(HoverPrimitive.IsValid() ? GetNameSafe(HoverPrimitive->GetOwner()) : "NULL"));
 	}
 }
 

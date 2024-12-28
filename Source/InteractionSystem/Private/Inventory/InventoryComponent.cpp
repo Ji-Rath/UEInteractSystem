@@ -67,51 +67,56 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 	if (!ensureMsgf(Item.IsValid(), TEXT("Invalid item to add to inventory"))) { return false; }
 	
 	auto CountToAdd = Item.Count;
-	
-	for (auto& InventoryContents : Inventory.Items)
+
+	while (CountToAdd > 0)
 	{
-		// If the item is already in the inventory
-		if (InventoryContents.ItemInformation == Item.ItemInformation)
+		// First try finding existing stack (that has room)
+		FInventoryContents* ItemInInventory = nullptr;
+		for (auto& InventoryContents : Inventory.Items)
 		{
-			int NewStack = InventoryContents.Count + CountToAdd;
-			if (InventoryContents.ItemInformation->CanStack(NewStack))
+			if (InventoryContents == Item && Item.HasRoom())
 			{
-				UE_LOG(LogInventory, Log, TEXT("Stacked item %s in inventory"), *Item.ItemInformation->DisplayName.ToString());
-				CountToAdd = InventoryContents.AddToStack(Item.Count);
-				Inventory.MarkItemDirty(InventoryContents);
-				OnItemChange.Broadcast(InventoryContents);
+				ItemInInventory = &InventoryContents;
+				break;
+			}
+		}
+		
+		if (ItemInInventory)
+		{
+			UE_LOG(LogInventory, Log, TEXT("Stacked item %s in inventory"), *Item.ItemInformation->DisplayName.ToString());
+			CountToAdd = ItemInInventory->AddToStack(Item.Count);
+			Inventory.MarkItemDirty(*ItemInInventory);
+			OnItemChange.Broadcast(*ItemInInventory);
+			OnRep_Inventory();
+			OutItemHandle = ItemInInventory->ItemHandle;
+		}
+		else
+		{
+			// Else, add to inventory
+			if (CanAddToInventory(Item))
+			{
+				UE_LOG(LogInventory, Log, TEXT("Added item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
+		
+				auto ItemCopy = Item;
+				ItemCopy.OwnerComp = this;
+				ItemCopy.Count = CountToAdd;
+				CountToAdd = ItemCopy.FixCount();
+		
+				auto& ItemAdded = Inventory.Items.Emplace_GetRef(ItemCopy);
+				OutItemHandle = ItemAdded.ItemHandle;
 				OnRep_Inventory();
-				
-				if (CountToAdd == 0)
-				{
-					OutItemHandle = InventoryContents.ItemHandle;
-					return true;
-				}
+				OnItemAdd.Broadcast(ItemAdded);
+				Inventory.MarkItemDirty(ItemAdded);
+			}
+			else
+			{
+				// We return false here as theres no other option
+				UE_LOG(LogInventory, Warning, TEXT("Failed to add item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
+				return false;
 			}
 		}
 	}
-	
-	// If the item is not in the inventory
-	if (CanAddToInventory(Item))
-	{
-		UE_LOG(LogInventory, Log, TEXT("Added item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
-		
-		auto ItemCopy = Item;
-		ItemCopy.OwnerComp = this;
-		
-		auto& ItemAdded = Inventory.Items.Emplace_GetRef(ItemCopy);
-		OutItemHandle = ItemAdded.ItemHandle;
-		OnRep_Inventory();
-		OnItemAdd.Broadcast(ItemAdded);
-		Inventory.MarkItemDirty(ItemAdded);
-		return true;
-	}
-	else
-	{
-		UE_LOG(LogInventory, Warning, TEXT("Failed to add item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
-	}
-	
-	return false;
+	return true;
 }
 
 void UInventoryComponent::EmptyInventory()
@@ -171,3 +176,19 @@ void UInventoryComponent::OnRep_Inventory()
 	OnInventoryChange.Broadcast(Inventory.Items);
 }
 
+void UInventoryComponent::RemoveItemFromInventory(const FInventoryContents& Item)
+{
+	int Amount = Item.Count;
+	auto InventoryItem = Inventory.Items.FindByKey(Item);
+	while (InventoryItem && Amount > 0)
+	{
+		UE_LOG(LogInventory, Log, TEXT("Want to remove: %d - Item has %d"),Amount, InventoryItem->Count);
+		Amount = InventoryItem->RemoveFromStack(Amount);
+		if (InventoryItem->Count <= 0)
+		{
+			RemoveFromInventory(InventoryItem->ItemHandle);
+		}
+		InventoryItem = Inventory.Items.FindByKey(Item);
+		UE_LOG(LogInventory, Log, TEXT("Amount = %d"), Amount)
+	}
+}
