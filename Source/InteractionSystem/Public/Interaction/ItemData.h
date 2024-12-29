@@ -13,7 +13,7 @@ class UTexture;
 
 /** Enum that defines the type of stacking that an item can have */
 UENUM()
-enum class EStackableType
+enum class EStackableType : uint8
 {
 	// The item cannot be stacked
 	NoStacking,
@@ -78,7 +78,7 @@ public:
 	TSoftObjectPtr<UStaticMesh> ItemMesh;
 
 	// The max stack possible for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="StackableType == Stackable"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
 	int32 MaxStack;
 
 	// Arbitrary vector value, used in the interaction system to align equipped items so they fit the screen properly
