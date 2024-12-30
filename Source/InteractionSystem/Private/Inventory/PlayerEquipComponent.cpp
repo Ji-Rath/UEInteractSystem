@@ -94,13 +94,13 @@ void UPlayerEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 	{
 		UE_LOG(LogPlayerEquip, Error, TEXT("%s: Item does not exist!"), *GetOwner()->GetName());
 	}
-	if (auto* ItemInfo = ItemContents.ItemInformation)
+	if (auto* ItemInfo = ItemContents.Item.Get().ItemInformation)
 	{
 		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
 	}
 	
 	/** Spawn item and attach it to the player */
-	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, ItemContents.ItemInformation->ItemOffset);
+	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, ItemContents.Item.Get().ItemInformation->ItemOffset);
 	
 	if (auto SMA = Cast<AStaticMeshActor>(Pickupable))
 	{
@@ -169,7 +169,7 @@ FItemHandle UPlayerEquipComponent::GetEquippedItem() const
 UItemInformation* UPlayerEquipComponent::GetEquippedItemInfo() const
 {
 	auto Item = InventoryComponent->GetItemByHandle(EquippedItem);
-	if (UItemInformation* ItemInfo = Item.ItemInformation)
+	if (UItemInformation* ItemInfo = Item.Item.Get().ItemInformation)
 	{
 		return ItemInfo;
 	}

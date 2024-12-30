@@ -8,7 +8,7 @@
 
 bool UInventoryLibrary::IsA(const FInventoryContents& Item, UItemInformation* Source)
 {
-	return Item.ItemInformation->IsA(Source->StaticClass());
+	return Item.Item.Get().ItemInformation->IsA(Source->StaticClass());
 }
 
 bool UInventoryLibrary::IsValid(FItemHandle& ItemHandle)

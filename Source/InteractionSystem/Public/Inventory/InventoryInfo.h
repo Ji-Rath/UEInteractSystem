@@ -9,6 +9,7 @@
 #include "StructUtils/InstancedStruct.h"
 #include "InventoryInfo.generated.h"
 
+class UInventoryComponent;
 class UItemInformation;
 
 // Handle for an item
@@ -38,14 +39,14 @@ struct FItemHandle
 	}
 };
 
-/** Holds information about an item */
-USTRUCT(Blueprintable, BlueprintType)
-struct FInventoryContents : public FFastArraySerializerItem
+/**
+ * Item data which is dynamically stored in a InventoryComponent
+ * Can be extended to allow for additional parameters if needed
+ */
+USTRUCT(BlueprintType)
+struct FItemData
 {
 	GENERATED_BODY()
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FItemHandle ItemHandle;
 
 	// Used to easily get data table row in editor. Is not reliable to give accurate info when playing in-game
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -55,48 +56,52 @@ struct FInventoryContents : public FFastArraySerializerItem
 	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite)
 	int Count;
 
+	virtual bool operator==(const FItemData& ItemData) const
+	{
+		return ItemInformation == ItemData.ItemInformation;
+	}
+	
+	virtual bool IsValid() const
+	{
+		return ItemInformation && Count > 0;
+	}
+
+	virtual bool HasRoom() const;
+
+	virtual int FixCount();
+	int AddToStack(int Amount);
+	int RemoveFromStack(int Amount);
+};
+
+/** Holds information about an item */
+USTRUCT(Blueprintable, BlueprintType)
+struct FInventoryContents : public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+
+	FInventoryContents() {};
+	FInventoryContents(const FItemHandle& NewHandle, const TInstancedStruct<FItemData> NewItem, UInventoryComponent* NewOwner);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FItemHandle ItemHandle;
+	
 	// Dynamic data that will vary from item to item
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FInstancedStruct DynamicData;
+	TInstancedStruct<FItemData> Item;
 
 	UPROPERTY()
-	TObjectPtr<UActorComponent> OwnerComp;
+	UInventoryComponent* OwnerComp;
 
 	template<typename T>
 	T* GetItemInformation() const
 	{
-		return Cast<T>(ItemInformation);
-	}
-
-	FInventoryContents()
-	{
-		Count = 0;
-		ItemInformation = nullptr;
-	}
-
-	FInventoryContents(UItemInformation* Item, int Amount)
-	{
-		ItemInformation = Item;
-		Count = Amount;
-	}
-
-	FInventoryContents(UItemInformation* Item, int Amount, const FInstancedStruct& InDynamicData)
-	{
-		ItemInformation = Item;
-		Count = Amount;
-		DynamicData = InDynamicData;
-	}
-
-	FInventoryContents(UItemInformation* Item)
-	{
-		ItemInformation = Item;
-		Count = 1;
+		return Cast<T>(Item.Get<FItemData>().ItemInformation);
 	}
 
 	// Compare data (besides count) to see if two items are the same
 	bool operator==(const FInventoryContents& OtherSlot) const
 	{
-		return ItemInformation == OtherSlot.ItemInformation && DynamicData == OtherSlot.DynamicData;
+		return Item.Get<FItemData>() == OtherSlot.Item.Get<FItemData>();
 	}
 
 	// Compare item handles to see if two items are the same
@@ -108,12 +113,17 @@ struct FInventoryContents : public FFastArraySerializerItem
 	// Compare static data to see if two items are the same
 	bool operator==(const UItemInformation* OtherItemInfo) const
 	{
-		return ItemInformation == OtherItemInfo;
+		return Item.Get<FItemData>().ItemInformation == OtherItemInfo;
+	}
+
+	bool operator==(const FItemData& OtherItemInfo) const
+	{
+		return Item.Get<FItemData>().ItemInformation == OtherItemInfo.ItemInformation;
 	}
 	
 	friend FArchive& operator<<(FArchive& Ar, FInventoryContents& objToSerialize)
 	{
-		Ar << objToSerialize.Count;
+		//Ar << objToSerialize.Count;
 		return Ar;
 	}
 
@@ -129,7 +139,8 @@ struct FInventoryContents : public FFastArraySerializerItem
 
 	bool IsValid() const
 	{
-		return Count > 0 && ItemInformation;
+		auto ItemData = Item.GetPtr<FItemData>();
+		return ItemData && ItemData->IsValid();
 	}
 	
 	void PreReplicatedRemove(const FFastArraySerializer& Serializer);

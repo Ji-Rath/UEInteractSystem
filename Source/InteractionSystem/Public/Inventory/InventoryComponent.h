@@ -45,7 +45,7 @@ public:
 	 * @param Item The item type and amount to remove
 	 */
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
-	virtual void RemoveItemFromInventory(const FInventoryContents& Item);
+	virtual void RemoveItemFromInventory(const FItemData& Item);
 
 	/**
 	 * Find the first slot containing Item
@@ -64,14 +64,14 @@ public:
 	 * @return Whether the item could be added to the inventory
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
-	virtual bool AddToInventory(const FInventoryContents& Item, FItemHandle& OutItemHandle);
+	virtual bool AddToInventory(const FItemData& Item, FItemHandle& OutItemHandle);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Inventory")
 	virtual void EmptyInventory();
 
 	//** Whether an item can be added to the inventory */
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	virtual bool CanAddToInventory(const FInventoryContents& Item) const;
+	virtual bool CanAddToInventory(const FItemData& Item) const;
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	void GetInventory(TArray<FInventoryContents>& OutInventory) const;
@@ -85,8 +85,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	static FInventoryContents FindItemByHandle(const FItemHandle& ItemHandle);
 
-	UFUNCTION(BlueprintCallable, Category="Inventory", meta=(AutoCreateRefTerm="DynamicData"))
-	virtual FInventoryContents GenerateItem(UItemInformation* ItemInfo, const FInstancedStruct& DynamicData, int Count = 1) const;
+	UFUNCTION(Category="Inventory")
+	virtual FInventoryContents GenerateItem(const TInstancedStruct<FItemData>& ItemData);
 	
 protected:
 	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Inventory, Category="Inventory")

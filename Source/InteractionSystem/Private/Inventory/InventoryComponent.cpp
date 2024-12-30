@@ -62,7 +62,7 @@ FItemHandle UInventoryComponent::FindItemByData(const UItemInformation* ItemData
 	return FItemHandle();
 }
 
-bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHandle& OutItemHandle)
+bool UInventoryComponent::AddToInventory(const FItemData& Item, FItemHandle& OutItemHandle)
 {
 	if (!ensureMsgf(Item.IsValid(), TEXT("Invalid item to add to inventory"))) { return false; }
 	
@@ -98,11 +98,10 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 				UE_LOG(LogInventory, Log, TEXT("Added item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
 		
 				auto ItemCopy = Item;
-				ItemCopy.OwnerComp = this;
 				ItemCopy.Count = CountToAdd;
 				CountToAdd = ItemCopy.FixCount();
 		
-				auto& ItemAdded = Inventory.Items.Emplace_GetRef(ItemCopy);
+				auto& ItemAdded = Inventory.Items.Emplace_GetRef(GenerateItem(TInstancedStruct<FItemData>::Make(ItemCopy)));
 				OutItemHandle = ItemAdded.ItemHandle;
 				OnRep_Inventory();
 				OnItemAdd.Broadcast(ItemAdded);
@@ -110,7 +109,7 @@ bool UInventoryComponent::AddToInventory(const FInventoryContents& Item, FItemHa
 			}
 			else
 			{
-				// We return false here as theres no other option
+				// We return false here as there is no other option
 				UE_LOG(LogInventory, Warning, TEXT("Failed to add item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
 				return false;
 			}
@@ -126,7 +125,7 @@ void UInventoryComponent::EmptyInventory()
 	OnRep_Inventory();
 }
 
-bool UInventoryComponent::CanAddToInventory(const FInventoryContents& Item) const
+bool UInventoryComponent::CanAddToInventory(const FItemData& Item) const
 {
 	return true;
 }
@@ -162,11 +161,9 @@ FInventoryContents UInventoryComponent::FindItemByHandle(const FItemHandle& Item
 	return FInventoryContents();
 }
 
-FInventoryContents UInventoryComponent::GenerateItem(UItemInformation* ItemInfo, const FInstancedStruct& DynamicData,
-                                                     int Count) const
+FInventoryContents UInventoryComponent::GenerateItem(const TInstancedStruct<FItemData>& ItemData)
 {
-	auto NewItem = FInventoryContents(ItemInfo, Count, DynamicData);
-	NewItem.ItemHandle = GenerateUniqueHandle();
+	auto NewItem = FInventoryContents(GenerateUniqueHandle(), ItemData, this);
 	
 	return NewItem;
 }
@@ -176,15 +173,15 @@ void UInventoryComponent::OnRep_Inventory()
 	OnInventoryChange.Broadcast(Inventory.Items);
 }
 
-void UInventoryComponent::RemoveItemFromInventory(const FInventoryContents& Item)
+void UInventoryComponent::RemoveItemFromInventory(const FItemData& Item)
 {
 	int Amount = Item.Count;
 	auto InventoryItem = Inventory.Items.FindByKey(Item);
 	while (InventoryItem && Amount > 0)
 	{
-		UE_LOG(LogInventory, Log, TEXT("Want to remove: %d - Item has %d"),Amount, InventoryItem->Count);
+		UE_LOG(LogInventory, Log, TEXT("Want to remove: %d - Item has %d"),Amount, InventoryItem->Item.Get().Count);
 		Amount = InventoryItem->RemoveFromStack(Amount);
-		if (InventoryItem->Count <= 0)
+		if (InventoryItem->Item.Get().Count <= 0)
 		{
 			RemoveFromInventory(InventoryItem->ItemHandle);
 		}

@@ -5,7 +5,19 @@
 #include "Inventory/InventoryComponent.h"
 
 
-int FInventoryContents::AddToStack(int Amount)
+bool FItemData::HasRoom() const
+{
+	return Count < ItemInformation->GetMaxStack();
+}
+
+int FItemData::FixCount()
+{
+	int Remainder = FMath::Max(Count - ItemInformation->GetMaxStack(), 0);
+	Count = FMath::Clamp(Count, 0, ItemInformation->GetMaxStack());
+	return Remainder;
+}
+
+int FItemData::AddToStack(int Amount)
 {
 	if (!ensureMsgf(Amount > 0, TEXT("Amount cannot be negative!"))) { return Amount; }
 	
@@ -14,7 +26,7 @@ int FInventoryContents::AddToStack(int Amount)
 	return FMath::Max(Remaining, 0);
 }
 
-int FInventoryContents::RemoveFromStack(int Amount)
+int FItemData::RemoveFromStack(int Amount)
 {
 	if (!ensureMsgf(Amount > 0, TEXT("Amount cannot be negative!"))) { return Amount; }
 	
@@ -23,16 +35,33 @@ int FInventoryContents::RemoveFromStack(int Amount)
 	return FMath::Abs(Remaining);
 }
 
+FInventoryContents::FInventoryContents(const FItemHandle& NewHandle, const TInstancedStruct<FItemData> NewItem,
+	UInventoryComponent* NewOwner) : ItemHandle(NewHandle), Item(NewItem), OwnerComp(NewOwner)
+{
+}
+
+int FInventoryContents::AddToStack(int Amount)
+{
+	auto& ItemData = Item.GetMutable<FItemData>();
+	return ItemData.AddToStack(Amount);
+}
+
+int FInventoryContents::RemoveFromStack(int Amount)
+{
+	auto& ItemData = Item.GetMutable<FItemData>();
+	return ItemData.RemoveFromStack(Amount);
+}
+
 int FInventoryContents::FixCount()
 {
-	int Remainder = FMath::Max(Count - ItemInformation->GetMaxStack(), 0);
-	Count = FMath::Clamp(Count, 0, ItemInformation->GetMaxStack());
-	return Remainder;
+	auto& ItemData = Item.GetMutable<FItemData>();
+	return ItemData.FixCount();
 }
 
 bool FInventoryContents::HasRoom() const
 {
-	return Count < ItemInformation->GetMaxStack();
+	auto& ItemData = Item.Get<FItemData>();
+	return ItemData.HasRoom();
 }
 
 void FInventoryContents::PreReplicatedRemove(const FFastArraySerializer& Serializer)
