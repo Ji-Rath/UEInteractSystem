@@ -21,7 +21,7 @@ public:
 /**
  * 
  */
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, BlueprintType)
 class INTERACTIONSYSTEM_API UUsable : public UItemInformation
 {
 	GENERATED_BODY()

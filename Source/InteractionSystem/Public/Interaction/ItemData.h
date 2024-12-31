@@ -34,7 +34,7 @@ struct FDataAssetWrapper
 
 /** Holds information about an item */
 UCLASS(Blueprintable, BlueprintType)
-class INTERACTIONSYSTEM_API UItemInformation : public UDataAsset
+class INTERACTIONSYSTEM_API UItemInformation : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
@@ -48,6 +48,8 @@ public:
 		MaxStack = 1;
 		ItemMesh = nullptr;
 	}
+	
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 	
 	// The display name of the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
