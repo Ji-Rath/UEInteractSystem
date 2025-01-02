@@ -7,12 +7,15 @@
 #include "InteractionSystem/Public/Interaction/Interactable.h"
 #include "Pickupable.generated.h"
 
+class UInteractableComponent;
 class UProjectileMovementComponent;
 class UItemInformation;
 
 UCLASS(Abstract)
-class INTERACTIONSYSTEM_API APickupable : public AActor, public IInteractable
+class INTERACTIONSYSTEM_API APickupable : public AActor
 {
+
+private:
 	GENERATED_BODY()
 
 public:
@@ -26,6 +29,9 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ExposeOnSpawn), Category="Pickupable")
 	UItemInformation* Item;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Interaction")
+	UInteractableComponent* InteractableComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UProjectileMovementComponent* ProjectileMovement;

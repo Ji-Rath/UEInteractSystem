@@ -4,7 +4,7 @@
 #include "Pickupable.h"
 
 #include "GameFramework/ProjectileMovementComponent.h"
-
+#include "Interaction/InteractableComponent.h"
 
 // Sets default values
 APickupable::APickupable()
@@ -13,6 +13,7 @@ APickupable::APickupable()
 	PrimaryActorTick.bCanEverTick = true;
 
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+	InteractableComponent = CreateDefaultSubobject<UInteractableComponent>(TEXT("InteractableComponent"));
 }
 
 // Called when the game starts or when spawned

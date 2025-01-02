@@ -6,13 +6,6 @@
 #include "UObject/Interface.h"
 #include "Interactable.generated.h"
 
-UENUM(BlueprintType)
-enum class EInteractType : uint8
-{
-	SingleUse,
-	Continuous
-};
-
 // This class does not need to be modified.
 UINTERFACE()
 class INTERACTIONSYSTEM_API UInteractable : public UInterface
@@ -30,7 +23,7 @@ class INTERACTIONSYSTEM_API IInteractable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// Perform an interaction on the interactable
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Interaction")
+	UFUNCTION(BlueprintImplementableEvent, Category="Interaction")
 	void Interact(const AActor* Interactor, USceneComponent* Component);
 
 	// Declares an interaction as finished, used primarily for continuous interaction

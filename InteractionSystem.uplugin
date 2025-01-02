@@ -23,7 +23,7 @@
 	],
 	"Plugins": [
 		{
-			"Name": "StructUtils",
+			"Name": "GameplayBehaviors",
 			"Enabled": true
 		}
 	]

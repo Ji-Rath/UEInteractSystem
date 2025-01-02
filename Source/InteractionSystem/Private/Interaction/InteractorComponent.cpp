@@ -7,6 +7,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/PlayerController.h"
 #include "Interaction/Interactable.h"
+#include "Interaction/InteractableComponent.h"
 
 DEFINE_LOG_CATEGORY(LogInteractor)
 
@@ -60,10 +61,11 @@ void UInteractorComponent::UpdateHoverActor()
 
 void UInteractorComponent::PerformInteraction(USceneComponent* Component)
 {
-	if (!Component->GetOwner()->Implements<UInteractable>()) { return; }
-	if (!IInteractable::Execute_CanInteract(Component->GetOwner(), GetOwner(), Component)) { return; }
-	
-	IInteractable::Execute_Interact(Component->GetOwner(), GetOwner(), Component);
+	AActor* Owner = Component->GetOwner();
+	if (auto Interactable = Owner->GetComponentByClass<UInteractableComponent>())
+	{
+		Interactable->Interact(GetOwner(), Component);
+	}
 }
 
 void UInteractorComponent::ServerInteract_Implementation(USceneComponent* Component)
@@ -84,17 +86,6 @@ void UInteractorComponent::Interact()
 
 void UInteractorComponent::InteractWith(USceneComponent* Component)
 {
-	if (!Component->GetOwner()->Implements<UInteractable>())
-	{
-		UE_LOG(LogInteractor, Verbose, TEXT("Could not interact with %s! Actor does not implement IInteractable"), *GetNameSafe(HoverPrimitive.Get()));
-		return;
-	}
-	if (!IInteractable::Execute_CanInteract(Component->GetOwner(), GetOwner(), Component))
-	{
-		UE_LOG(LogInteractor, Verbose, TEXT("Could not interact with %s! CanInteract() returned false"), *GetNameSafe(HoverPrimitive.Get()));
-		return;
-	}
-	
 	PerformInteraction(Component);
 
 	// Perform interaction on server as well
