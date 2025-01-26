@@ -23,7 +23,7 @@ class INTERACTIONSYSTEM_API IInteractable
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// Perform an interaction on the interactable
-	UFUNCTION(BlueprintImplementableEvent, Category="Interaction")
+	UFUNCTION(BlueprintImplementableEvent, Category="Interaction", meta=(DeprecatedFunction))
 	void Interact(const AActor* Interactor, USceneComponent* Component);
 
 	// Declares an interaction as finished, used primarily for continuous interaction
