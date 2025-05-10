@@ -26,7 +26,7 @@ void UInteractorComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!IsRunningDedicatedServer())
+	if (GetOwner()->HasLocalNetOwner())
 	{
 		UpdateHoverActor();
 	}
@@ -64,7 +64,10 @@ void UInteractorComponent::PerformInteraction(USceneComponent* Component)
 	AActor* Owner = Component->GetOwner();
 	if (auto Interactable = Owner->GetComponentByClass<UInteractableComponent>())
 	{
-		Interactable->Interact(GetOwner(), Component);
+		if (Interactable->IsPlayerInteractable())
+		{
+			Interactable->Interact(GetOwner(), Component);
+		}
 	}
 }
 

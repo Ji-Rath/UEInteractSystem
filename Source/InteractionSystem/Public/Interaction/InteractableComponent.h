@@ -16,7 +16,7 @@ enum class EInteractType : uint8
 	Continuous
 };
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class INTERACTIONSYSTEM_API UInteractableComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -34,7 +34,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Interaction")
 	EInteractType InteractType = EInteractType::SingleUse;
 
-	UPROPERTY(EditDefaultsOnly, Category="Interaction")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction")
 	bool bIsPlayerInteractable = true;
 
 	// Perform an interaction on the interactable
