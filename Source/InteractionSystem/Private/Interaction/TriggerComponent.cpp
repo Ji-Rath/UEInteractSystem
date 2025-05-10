@@ -5,6 +5,7 @@
 
 #include "TimerManager.h"
 #include "GameFramework/Actor.h"
+#include "Interaction/InteractableComponent.h"
 
 // Sets default values for this component's properties
 UTriggerComponent::UTriggerComponent()
@@ -31,7 +32,7 @@ void UTriggerComponent::TriggerActors(AActor* Instigator, UPrimitiveComponent* C
 {
 	FTimerDelegate TimerDel = FTimerDelegate::CreateUObject(this, &UTriggerComponent::ExecuteInteraction, Instigator);
 
-	bool bCanTrigger = TriggerCount < TriggerAmount || TriggerAmount == 0;
+	bool bCanTrigger = true;
 	if (bCanTrigger)
 	{
 		if (TriggerDelay > 0.f)
@@ -54,9 +55,12 @@ void UTriggerComponent::TriggerActors(AActor* Instigator, UPrimitiveComponent* C
 void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 {
 	/** Call trigger function for all actors in array */
-	for (const auto Interactable : InteractablesToTrigger)
+	for (const auto Interactable : Interactables)
 	{
-		if (!Interactable) { continue; }
+		if (auto InteractableComponent = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get())))
+		{
+			InteractableComponent->Interact(Instigator, Interactable.OtherActor->GetRootComponent());
+		}
 	}
 }
 

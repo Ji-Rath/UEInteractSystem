@@ -27,12 +27,8 @@ protected:
 public:	
 
 	/** TArray of actors to trigger when TriggerActors() function is called */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trigger", meta=(AllowAnyActor, AllowedClasses="InteractableComponent"))
-	TArray<AActor*> InteractablesToTrigger;
-
-	/* Whether to call the OnInteract delegate on trigger */
-	UPROPERTY(EditAnywhere, Category = "Trigger")
-	bool bCallOnInteract = true;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trigger", meta=(UseComponentPicker, AllowAnyActor, AllowedClasses="InteractableComponent"))
+	TArray<FComponentReference> Interactables;
 
 	/** Function to be called to trigger actors in ActorsToTrigger array */
 	UFUNCTION(BlueprintCallable)
@@ -41,14 +37,6 @@ public:
 	/** Delay before triggering actors, 0 for no delay */
 	UPROPERTY(EditAnywhere, Category = "Trigger|Advanced")
 	float TriggerDelay = 0.f;
-
-	/** Times to allow triggering */
-	UPROPERTY(EditAnywhere, Category = "Trigger|Advanced")
-	int TriggerAmount = 0;
-
-	/* Determines whether to trigger other components automatically or manually called using TriggerActors */
-	UPROPERTY(EditAnywhere, Category = "Trigger")
-	bool bAutoManage = true;
 
 private:
 	/** Internal variable for tracking times triggered */
