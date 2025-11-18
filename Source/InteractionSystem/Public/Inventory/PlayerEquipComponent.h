@@ -84,6 +84,10 @@ private:
 	/** Impulse to throw equipped item */
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
 	float ThrowImpulse = 500.f;
+	
+	/* Determines whether we automatically equip items we pick up */
+	UPROPERTY(EditDefaultsOnly, Category = "PlayerEquip")
+	bool bAutoEquip = true;
 
 	UPROPERTY()
 	USpringArmComponent* ItemAttachSpring = nullptr;

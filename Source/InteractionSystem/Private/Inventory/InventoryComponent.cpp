@@ -52,14 +52,15 @@ FInventoryContents UInventoryComponent::GetItemByHandle(const FItemHandle& ItemH
 	return FInventoryContents();
 }
 
-FItemHandle UInventoryComponent::FindItemByData(const UItemInformation* ItemData) const
+bool UInventoryComponent::FindItemByData(const UItemInformation* ItemData, FItemHandle& ItemHandle) const
 {
 	if (auto Item = Inventory.Items.FindByKey(ItemData))
 	{
-		return Item->ItemHandle;
+		ItemHandle = Item->ItemHandle;
+		return true;
 	}
 	
-	return FItemHandle();
+	return false;
 }
 
 bool UInventoryComponent::AddToInventory(const FItemData& Item, FItemHandle& OutItemHandle)

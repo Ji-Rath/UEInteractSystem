@@ -56,7 +56,7 @@ public:
 	FInventoryContents GetItemByHandle(const FItemHandle& ItemHandle) const;
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	FItemHandle FindItemByData(const UItemInformation* ItemData) const;
+	bool FindItemByData(const UItemInformation* ItemData, FItemHandle& ItemHandle) const;
 
 	/**
 	 * Attempt to add an item to the inventory

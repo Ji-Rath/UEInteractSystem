@@ -22,7 +22,7 @@ DECLARE_LOG_CATEGORY_CLASS(LogPlayerEquip, Log, All);
 
 void UPlayerEquipComponent::ItemAdded(const FInventoryContents& Item)
 {
-	if (!HasItemEquipped())
+	if (bAutoEquip && !HasItemEquipped())
 	{
 		EquipItem(Item.ItemHandle);
 	}

@@ -34,7 +34,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Interaction")
 	EInteractType InteractType = EInteractType::SingleUse;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Interaction")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Interaction")
 	bool bIsPlayerInteractable = true;
 
 	// Perform an interaction on the interactable
