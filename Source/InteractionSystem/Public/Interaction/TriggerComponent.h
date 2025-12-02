@@ -27,7 +27,7 @@ protected:
 public:	
 
 	/** TArray of actors to trigger when TriggerActors() function is called */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trigger", meta=(UseComponentPicker, AllowAnyActor, AllowedClasses="InteractableComponent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Trigger", meta=(UseComponentPicker, AllowAnyActor, AllowedClasses="/Script/InteractionSystem.InteractableComponent"))
 	TArray<FComponentReference> Interactables;
 
 	/** Function to be called to trigger actors in ActorsToTrigger array */
