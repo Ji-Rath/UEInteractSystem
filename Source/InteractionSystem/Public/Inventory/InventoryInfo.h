@@ -32,6 +32,11 @@ struct FItemHandle
 	{
 		return HandleID == ItemHandle.HandleID;
 	}
+	
+	bool operator!=(const FItemHandle& ItemHandle) const
+	{
+		return HandleID != ItemHandle.HandleID;
+	}
 
 	bool IsValid() const
 	{
