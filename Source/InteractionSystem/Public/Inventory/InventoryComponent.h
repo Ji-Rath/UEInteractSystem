@@ -80,7 +80,7 @@ public:
 	void SetInventory(const TArray<FInventoryContents>& NewInventory);
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	static FItemHandle GenerateUniqueHandle();
+	FItemHandle GenerateUniqueHandle();
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	static FInventoryContents FindItemByHandle(const FItemHandle& ItemHandle);

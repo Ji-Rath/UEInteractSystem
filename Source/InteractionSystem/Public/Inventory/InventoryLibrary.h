@@ -23,4 +23,7 @@ class INTERACTIONSYSTEM_API UInventoryLibrary : public UBlueprintFunctionLibrary
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
 	static bool IsValid(FItemHandle& ItemHandle);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
+	static FInventoryContents GetItemByHandle(const FItemHandle& ItemHandle);
 };

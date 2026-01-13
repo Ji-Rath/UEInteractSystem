@@ -11,14 +11,19 @@ struct FItemHandle;
 /**
  * Executes an items action
  */
-UCLASS(Abstract, Blueprintable)
+UCLASS(Abstract, Blueprintable, DefaultToInstanced, EditInlineNew)
 class INTERACTIONSYSTEM_API UItemAction : public UObject
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void Execute(const FItemHandle& Item) const;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ItemAction", BlueprintPure = false)
+	void ExecuteAction(const FItemHandle& ItemHandle, AActor* Actor) const;
+	virtual void ExecuteAction_Implementation(const FItemHandle& ItemHandle, AActor* Actor) const {};
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ItemAction", BlueprintPure = false)
+	void FinishExecuteAction(const FItemHandle& ItemHandle, AActor* Actor) const;
+	virtual void FinishExecuteAction_Implementation(const FItemHandle& ItemHandle, AActor* Actor) const {};
 
 	virtual UWorld* GetWorld() const override;
 

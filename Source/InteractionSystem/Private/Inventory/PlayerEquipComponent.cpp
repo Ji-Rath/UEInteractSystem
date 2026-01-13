@@ -7,10 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Interaction/InteractorComponent.h"
 #include "Interaction/ItemAction.h"
 #include "Interaction/ItemData.h"
-#include "Interaction/Usable.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Inventory/InventoryComponent.h"
 #include "Inventory/InventoryInfo.h"
@@ -94,13 +92,13 @@ void UPlayerEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 	{
 		UE_LOG(LogPlayerEquip, Error, TEXT("%s: Item does not exist!"), *GetOwner()->GetName());
 	}
-	if (auto* ItemInfo = ItemContents.Item.Get().ItemInformation)
+	if (auto* ItemInfo = ItemContents.ItemData.Get().ItemInformation)
 	{
 		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
 	}
 	
 	/** Spawn item and attach it to the player */
-	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, ItemContents.Item.Get().ItemInformation->ItemOffset);
+	AActor* Pickupable = GetWorld()->SpawnActor<AActor>(ItemBaseClass, ItemContents.ItemData.Get().ItemInformation->ItemOffset);
 	
 	if (auto SMA = Cast<AStaticMeshActor>(Pickupable))
 	{
@@ -169,7 +167,7 @@ FItemHandle UPlayerEquipComponent::GetEquippedItem() const
 UItemInformation* UPlayerEquipComponent::GetEquippedItemInfo() const
 {
 	auto Item = InventoryComponent->GetItemByHandle(EquippedItem);
-	if (UItemInformation* ItemInfo = Item.Item.Get().ItemInformation)
+	if (UItemInformation* ItemInfo = Item.ItemData.Get().ItemInformation)
 	{
 		return ItemInfo;
 	}
@@ -241,11 +239,11 @@ void UPlayerEquipComponent::UseItem()
 {
 	if (!EquippedItem.IsValid()) { return; }
 
-	auto Item = UInventoryComponent::FindItemByHandle(EquippedItem);
-	auto ItemInfo = Item.GetItemInformation<UUsable>();
+	FInventoryContents Item = UInventoryComponent::FindItemByHandle(EquippedItem);
+	UItemInformation* ItemInfo = Item.GetItemInformation();
 	if (!ItemInfo) { return; }
-	
-	auto Action = ItemInfo->ActionConfig.GetPtr<FUsableAction>();
+
+	UItemAction* Action = ItemInfo->Action;
 	if (!Action) { return; }
 	
 	Action->ExecuteAction(EquippedItem, GetOwner());
@@ -256,10 +254,10 @@ void UPlayerEquipComponent::FinishUseItem()
 	if (!EquippedItem.IsValid()) { return; }
 
 	auto Item = UInventoryComponent::FindItemByHandle(EquippedItem);
-	auto ItemInfo = Item.GetItemInformation<UUsable>();
+	auto ItemInfo = Item.GetItemInformation();
 	if (!ItemInfo) { return; }
 	
-	auto Action = ItemInfo->ActionConfig.GetPtr<FUsableAction>();
+	UItemAction* Action = ItemInfo->Action;
 	if (!Action) { return; }
 	
 	Action->FinishExecuteAction(EquippedItem, GetOwner());

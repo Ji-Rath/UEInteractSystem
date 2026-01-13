@@ -145,7 +145,7 @@ void UInventoryComponent::SetInventory(const TArray<FInventoryContents>& NewInve
 
 FItemHandle UInventoryComponent::GenerateUniqueHandle()
 {
-	return FItemHandle(IDNum++);
+	return FItemHandle(IDNum++, this);
 }
 
 FInventoryContents UInventoryComponent::FindItemByHandle(const FItemHandle& ItemHandle)
@@ -164,8 +164,7 @@ FInventoryContents UInventoryComponent::FindItemByHandle(const FItemHandle& Item
 
 FInventoryContents UInventoryComponent::GenerateItem(const TInstancedStruct<FItemData>& ItemData)
 {
-	auto NewItem = FInventoryContents(GenerateUniqueHandle(), ItemData, this);
-	
+	FInventoryContents NewItem = FInventoryContents(GenerateUniqueHandle(), ItemData);
 	return NewItem;
 }
 
@@ -180,9 +179,9 @@ void UInventoryComponent::RemoveItemFromInventory(const FItemData& Item)
 	auto InventoryItem = Inventory.Items.FindByKey(Item);
 	while (InventoryItem && Amount > 0)
 	{
-		UE_LOG(LogInventory, Log, TEXT("Want to remove: %d - Item has %d"),Amount, InventoryItem->Item.Get().Count);
+		UE_LOG(LogInventory, Log, TEXT("Want to remove: %d - Item has %d"),Amount, InventoryItem->ItemData.Get().Count);
 		Amount = InventoryItem->RemoveFromStack(Amount);
-		if (InventoryItem->Item.Get().Count <= 0)
+		if (InventoryItem->ItemData.Get().Count <= 0)
 		{
 			RemoveFromInventory(InventoryItem->ItemHandle);
 		}

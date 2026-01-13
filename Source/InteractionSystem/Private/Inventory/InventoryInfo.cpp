@@ -35,49 +35,46 @@ int FItemData::RemoveFromStack(int Amount)
 	return FMath::Abs(Remaining);
 }
 
-FInventoryContents::FInventoryContents(const FItemHandle& NewHandle, const TInstancedStruct<FItemData> NewItem,
-	UInventoryComponent* NewOwner) : ItemHandle(NewHandle), Item(NewItem), OwnerComp(NewOwner)
+FInventoryContents::FInventoryContents(const FItemHandle& NewHandle, const TInstancedStruct<FItemData> NewItem)
+: ItemHandle(NewHandle), ItemData(NewItem)
 {
 }
 
 int FInventoryContents::AddToStack(int Amount)
 {
-	auto& ItemData = Item.GetMutable<FItemData>();
-	return ItemData.AddToStack(Amount);
+	FItemData& Data = ItemData.GetMutable();
+	return Data.AddToStack(Amount);
 }
 
 int FInventoryContents::RemoveFromStack(int Amount)
 {
-	auto& ItemData = Item.GetMutable<FItemData>();
-	return ItemData.RemoveFromStack(Amount);
+	FItemData& Data = ItemData.GetMutable();
+	return Data.RemoveFromStack(Amount);
 }
 
 int FInventoryContents::FixCount()
 {
-	auto& ItemData = Item.GetMutable<FItemData>();
-	return ItemData.FixCount();
+	FItemData& Data = ItemData.GetMutable();
+	return Data.FixCount();
 }
 
 bool FInventoryContents::HasRoom() const
 {
-	auto& ItemData = Item.Get<FItemData>();
-	return ItemData.HasRoom();
+	const FItemData& Data = ItemData.Get();
+	return Data.HasRoom();
 }
 
 void FInventoryContents::PreReplicatedRemove(const FFastArraySerializer& Serializer)
 {
-	auto InvComp = Cast<UInventoryComponent>(OwnerComp);
-	InvComp->OnItemRemove.Broadcast(*this);
+	ItemHandle.OwningInventory->OnItemRemove.Broadcast(*this);
 }
 
 void FInventoryContents::PostReplicatedAdd(const FFastArraySerializer& Serializer)
 {
-	auto InvComp = Cast<UInventoryComponent>(OwnerComp);
-	InvComp->OnItemAdd.Broadcast(*this);
+	ItemHandle.OwningInventory->OnItemAdd.Broadcast(*this);
 }
 
 void FInventoryContents::PostReplicatedChange(const FFastArraySerializer& Serializer)
 {
-	auto InvComp = Cast<UInventoryComponent>(OwnerComp);
-	InvComp->OnItemChange.Broadcast(*this);
+	ItemHandle.OwningInventory->OnItemChange.Broadcast(*this);
 }

@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Engine/DataTable.h"
-#include "StructUtils/InstancedStruct.h"
 #include "ItemData.generated.h"
 
+class UItemAction;
 class UStaticMesh;
 class UTexture;
 
@@ -58,6 +58,10 @@ public:
 	// The description of the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
 	FText Description;
+	
+	// Action executed when this item is used
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Action", Instanced)
+	TObjectPtr<UItemAction> Action;
 
 	/** Texture of item */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Visual")

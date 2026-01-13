@@ -21,26 +21,24 @@ struct FItemHandle
 	UPROPERTY()
 	int HandleID = -1;
 	
-	FItemHandle(int ID = -1) : HandleID(ID) {}
-
-	virtual bool IsValid()
-	{
-		return HandleID != -1;
-	}
+	UPROPERTY()
+	UInventoryComponent* OwningInventory;
+	
+	FItemHandle(int ID = -1, UInventoryComponent* InventoryComponent = nullptr) : HandleID(ID), OwningInventory(InventoryComponent) {}
 
 	bool operator==(const FItemHandle& ItemHandle) const
 	{
-		return HandleID == ItemHandle.HandleID;
+		return HandleID == ItemHandle.HandleID && OwningInventory == ItemHandle.OwningInventory;
 	}
 	
 	bool operator!=(const FItemHandle& ItemHandle) const
 	{
-		return HandleID != ItemHandle.HandleID;
+		return HandleID != ItemHandle.HandleID || OwningInventory != ItemHandle.OwningInventory;
 	}
 
 	bool IsValid() const
 	{
-		return HandleID != -1;
+		return HandleID != -1 && OwningInventory;
 	}
 };
 
@@ -85,28 +83,31 @@ struct FInventoryContents : public FFastArraySerializerItem
 	GENERATED_BODY()
 
 	FInventoryContents() {};
-	FInventoryContents(const FItemHandle& NewHandle, const TInstancedStruct<FItemData> NewItem, UInventoryComponent* NewOwner);
+	FInventoryContents(const FItemHandle& NewHandle, const TInstancedStruct<FItemData> NewItem);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
 	FItemHandle ItemHandle;
 	
 	// Dynamic data that will vary from item to item
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TInstancedStruct<FItemData> Item;
-
-	UPROPERTY()
-	UInventoryComponent* OwnerComp;
+	// @note Base class is FItemData
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TInstancedStruct<FItemData> ItemData;
 
 	template<typename T>
 	T* GetItemInformation() const
 	{
-		return Cast<T>(Item.Get<FItemData>().ItemInformation);
+		return Cast<T>(ItemData.Get<FItemData>().ItemInformation);
+	}
+	
+	UItemInformation* GetItemInformation() const
+	{
+		return ItemData.Get<FItemData>().ItemInformation;
 	}
 
 	// Compare data (besides count) to see if two items are the same
 	bool operator==(const FInventoryContents& OtherSlot) const
 	{
-		return Item.Get<FItemData>() == OtherSlot.Item.Get<FItemData>();
+		return ItemData.Get<FItemData>() == OtherSlot.ItemData.Get<FItemData>();
 	}
 
 	// Compare item handles to see if two items are the same
@@ -118,12 +119,12 @@ struct FInventoryContents : public FFastArraySerializerItem
 	// Compare static data to see if two items are the same
 	bool operator==(const UItemInformation* OtherItemInfo) const
 	{
-		return Item.Get<FItemData>().ItemInformation == OtherItemInfo;
+		return ItemData.Get<FItemData>().ItemInformation == OtherItemInfo;
 	}
 
 	bool operator==(const FItemData& OtherItemInfo) const
 	{
-		return Item.Get<FItemData>().ItemInformation == OtherItemInfo.ItemInformation;
+		return ItemData.Get<FItemData>().ItemInformation == OtherItemInfo.ItemInformation;
 	}
 	
 	friend FArchive& operator<<(FArchive& Ar, FInventoryContents& objToSerialize)
@@ -144,8 +145,7 @@ struct FInventoryContents : public FFastArraySerializerItem
 
 	bool IsValid() const
 	{
-		auto ItemData = Item.GetPtr<FItemData>();
-		return ItemData && ItemData->IsValid();
+		return ItemData.IsValid();
 	}
 	
 	void PreReplicatedRemove(const FFastArraySerializer& Serializer);
