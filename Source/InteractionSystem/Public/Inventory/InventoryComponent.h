@@ -89,7 +89,7 @@ public:
 	virtual FInventoryContents GenerateItem(const TInstancedStruct<FItemData>& ItemData);
 	
 protected:
-	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Inventory, Category="Inventory")
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing=OnRep_Inventory, Category="Inventory", SaveGame)
 	FInventoryContainer Inventory;
 	
 	UFUNCTION()

@@ -18,10 +18,10 @@ struct FItemHandle
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	int HandleID = -1;
 	
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	UInventoryComponent* OwningInventory;
 	
 	FItemHandle(int ID = -1, UInventoryComponent* InventoryComponent = nullptr) : HandleID(ID), OwningInventory(InventoryComponent) {}
@@ -52,11 +52,11 @@ struct FItemData
 	GENERATED_BODY()
 
 	// Used to easily get data table row in editor. Is not reliable to give accurate info when playing in-game
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame)
 	UItemInformation* ItemInformation;
 
 	// The current item count in the stack
-	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, SaveGame)
 	int Count;
 
 	virtual bool operator==(const FItemData& ItemData) const
@@ -85,12 +85,12 @@ struct FInventoryContents : public FFastArraySerializerItem
 	FInventoryContents() {};
 	FInventoryContents(const FItemHandle& NewHandle, const TInstancedStruct<FItemData> NewItem);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item", SaveGame)
 	FItemHandle ItemHandle;
 	
 	// Dynamic data that will vary from item to item
 	// @note Base class is FItemData
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item", SaveGame)
 	TInstancedStruct<FItemData> ItemData;
 
 	template<typename T>
@@ -126,12 +126,6 @@ struct FInventoryContents : public FFastArraySerializerItem
 	{
 		return ItemData.Get<FItemData>().ItemInformation == OtherItemInfo.ItemInformation;
 	}
-	
-	friend FArchive& operator<<(FArchive& Ar, FInventoryContents& objToSerialize)
-	{
-		//Ar << objToSerialize.Count;
-		return Ar;
-	}
 
 	/**
 	 * Attempt to add items to the stack
@@ -158,7 +152,7 @@ struct FInventoryContainer : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	TArray<FInventoryContents> Items;
 	
 	/** Step 4: Copy this, replace example with your names */
@@ -173,6 +167,6 @@ struct TStructOpsTypeTraits<FInventoryContainer> : public TStructOpsTypeTraitsBa
 {
 	enum
 	{
-		WithNetDeltaSerializer = true,
+		WithNetDeltaSerializer = true
 	};
 };
