@@ -23,15 +23,6 @@ enum class EStackableType : uint8
 	InfiniteStack
 };
 
-USTRUCT(BlueprintType)
-struct FDataAssetWrapper
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UDataAsset* DataAsset;
-};
-
 /** Holds information about an item */
 UCLASS(Blueprintable, BlueprintType)
 class INTERACTIONSYSTEM_API UItemInformation : public UPrimaryDataAsset

@@ -50,14 +50,16 @@ USTRUCT(BlueprintType)
 struct FItemData
 {
 	GENERATED_BODY()
+	
+	FItemData() = default;
 
 	// Used to easily get data table row in editor. Is not reliable to give accurate info when playing in-game
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame)
-	UItemInformation* ItemInformation;
+	TObjectPtr<UItemInformation> ItemInformation;
 
 	// The current item count in the stack
 	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, SaveGame)
-	int Count;
+	int Count = 0;
 
 	virtual bool operator==(const FItemData& ItemData) const
 	{

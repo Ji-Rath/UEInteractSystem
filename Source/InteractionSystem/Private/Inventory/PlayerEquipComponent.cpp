@@ -92,7 +92,7 @@ void UPlayerEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 	{
 		UE_LOG(LogPlayerEquip, Error, TEXT("%s: Item does not exist!"), *GetOwner()->GetName());
 	}
-	if (auto* ItemInfo = ItemContents.ItemData.Get().ItemInformation)
+	if (UItemInformation* ItemInfo = ItemContents.ItemData.Get().ItemInformation)
 	{
 		ItemBaseClass = ItemInfo->bCustomClass ? ItemInfo->CustomClass : ItemBaseClass;
 	}
