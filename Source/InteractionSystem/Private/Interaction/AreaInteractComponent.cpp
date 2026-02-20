@@ -1,5 +1,7 @@
 
 #include "Interaction/AreaInteractComponent.h"
+
+#include "Interaction/InteractableComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
@@ -17,6 +19,12 @@ void UAreaInteractComponent::UpdateHoverActor()
 	
 	if (OverlappingPrimitives.Num() > 0)
 	{
+		// Filter out non-interactable actors
+		OverlappingPrimitives = OverlappingPrimitives.FilterByPredicate([this](const UPrimitiveComponent* Prim)
+		{
+			return Prim->GetOwner()->FindComponentByClass<UInteractableComponent>();
+		});
+		
 		/** Return early if there is no change */
 		OverlappingPrimitives.Sort([this](const UPrimitiveComponent& Prim1, const UPrimitiveComponent& Prim2)
 		{
