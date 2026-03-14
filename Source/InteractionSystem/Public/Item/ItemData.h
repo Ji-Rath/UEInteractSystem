@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemVisual.h"
 #include "Engine/DataAsset.h"
 #include "Engine/DataTable.h"
 #include "ItemData.generated.h"
@@ -37,50 +38,49 @@ public:
 		Description = FText::FromString(TEXT("NoDesc"));
 		StackableType = EStackableType::NoStacking;
 		MaxStack = 1;
-		ItemMesh = nullptr;
 	}
 	
 	virtual FPrimaryAssetId GetPrimaryAssetId() const override;
 	
 	// The display name of the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	FText DisplayName;
 
 	// The description of the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	FText Description;
-	
-	// Action executed when this item is used
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Action", Instanced)
-	TObjectPtr<UItemAction> Action;
 
 	/** Texture of item */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Visual")
-	UTexture2D* ItemIcon = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="UI", meta = (AssetBundles = "UI"))
+	TSoftObjectPtr<UTexture2D> ItemIcon = nullptr;
+	
+	// Whether we want to override the actor used for item visualization
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual")
+	bool bOverrideActor = false;
+
+	// The actor used for the item - ex. visualization
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual", meta = (EditCondition = "bOverrideActor", EditConditionHides, AssetBundles = "Visual"))
+	TSoftClassPtr<AItemVisual> ActorClass = AItemVisual::StaticClass();
+	
+	// The mesh used for visualizing the item
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual", meta = (EditCondition = "!bOverrideActor", EditConditionHides, AssetBundles = "Visual"))
+	TSoftObjectPtr<UStaticMesh> ItemMesh;
+	
+	// Arbitrary vector value, used in the interaction system to align equipped items so they fit the screen properly
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual|Advanced")
+	FTransform ItemOffset;
+	
+	// Action executed when this item is used
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="ItemInfo", Instanced)
+	TObjectPtr<UItemAction> Action;
 
 	// Determines how the item will stack when there is more than 1 in an inventory
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="ItemInfo")
 	EStackableType StackableType;
 
-	// Whether the item uses a custom class or not
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual")
-	bool bCustomClass = false;
-
-	// The custom actor used for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual", meta=(EditCondition="bCustomClass == true", EditConditionHides))
-	TSubclassOf<AActor> CustomClass;
-
-	// The mesh used for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual", meta=(EditCondition="bCustomClass == false", EditConditionHides))
-	TSoftObjectPtr<UStaticMesh> ItemMesh;
-
 	// The max stack possible for the item
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Data", meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="ItemInfo", meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
 	int32 MaxStack;
-
-	// Arbitrary vector value, used in the interaction system to align equipped items so they fit the screen properly
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Visual|Optional")
-	FTransform ItemOffset;
 	
 	bool CanStack(int Count) const
 	{

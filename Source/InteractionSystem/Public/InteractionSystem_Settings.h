@@ -10,13 +10,11 @@
 /**
  * 
  */
-UCLASS(Config = MySetting)
+UCLASS(Config = InteractionSystem)
 class INTERACTIONSYSTEM_API UInteractionSystem_Settings : public UObject
 {
 	GENERATED_BODY()
 
 public:
-
-	UPROPERTY(Config, EditAnywhere, Category = "Inventory")
-	TSoftObjectPtr<UDataTable> ItemTable;
+	
 };

@@ -18,12 +18,12 @@ class INTERACTIONSYSTEM_API UItemAction : public UObject
 
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ItemAction", BlueprintPure = false)
-	void ExecuteAction(const FItemHandle& ItemHandle, AActor* Actor) const;
-	virtual void ExecuteAction_Implementation(const FItemHandle& ItemHandle, AActor* Actor) const {};
+	void ExecuteAction(const FItemHandle& ItemHandle, AActor* Actor);
+	virtual void ExecuteAction_Implementation(const FItemHandle& ItemHandle, AActor* Actor) {};
 	
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category="ItemAction", BlueprintPure = false)
-	void FinishExecuteAction(const FItemHandle& ItemHandle, AActor* Actor) const;
-	virtual void FinishExecuteAction_Implementation(const FItemHandle& ItemHandle, AActor* Actor) const {};
+	void FinishExecuteAction(const FItemHandle& ItemHandle, AActor* Actor);
+	virtual void FinishExecuteAction_Implementation(const FItemHandle& ItemHandle, AActor* Actor) {};
 
 	virtual UWorld* GetWorld() const override;
 

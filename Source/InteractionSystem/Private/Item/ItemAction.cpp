@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Interaction/ItemAction.h"
+#include "Item/ItemAction.h"
 
 UWorld* UItemAction::GetWorld() const
 {

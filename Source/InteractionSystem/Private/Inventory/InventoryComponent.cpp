@@ -6,7 +6,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Inventory/InventoryInfo.h"
-#include "Interaction/ItemData.h"
+#include "Item/ItemData.h"
 #include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogInventory);
