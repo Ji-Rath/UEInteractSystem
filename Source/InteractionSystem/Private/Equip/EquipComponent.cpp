@@ -46,8 +46,7 @@ void UEquipComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	
 	if (HasItemEquipped())
 	{
-		UAssetManager& Manager = UAssetManager::Get();
-		Manager.ChangeBundleStateForPrimaryAssets({GetEquippedItemInfo()->GetPrimaryAssetId()}, {}, {"Visual"});
+		UnequipItem();
 	}
 }
 
@@ -91,6 +90,7 @@ UItemInformation* UEquipComponent::GetEquippedItemInfo() const
 		return ItemInfo;
 	}
 	
+	checkNoEntry()
 	return nullptr;
 }
 
@@ -148,11 +148,13 @@ void UEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 	if (!Item.IsValid()) { return; }
 	EquippedItem = Item;
 	
+	check(GetEquippedItemInfo());
+	
 	UAssetManager& Manager = UAssetManager::Get();
 	Manager.LoadPrimaryAsset(GetEquippedItemInfo()->GetPrimaryAssetId(), {"Visual"}, 
-		FStreamableDelegate::CreateWeakLambda(this, [&]()
+		FStreamableDelegate::CreateWeakLambda(this, [&, EquipItem = Item]()
 		{
-			OnUpdateEquipState.Broadcast(Item);
+			OnUpdateEquipState.Broadcast(EquipItem);
 		}));
 }
 
