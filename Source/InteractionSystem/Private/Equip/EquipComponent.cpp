@@ -82,7 +82,7 @@ FItemHandle UEquipComponent::GetEquippedItem() const
 
 UItemInformation* UEquipComponent::GetEquippedItemInfo() const
 {
-	const FInventoryContents& Item = InventoryComponent->GetItemByHandle(EquippedItem);
+	const FInventoryContents& Item = InventoryComponent->GetItemDataChecked(EquippedItem);
 	if (!Item.IsValid()) { return nullptr; }
 	
 	if (UItemInformation* ItemInfo = Item.ItemData.Get().ItemInformation)
@@ -97,7 +97,7 @@ UItemInformation* UEquipComponent::GetEquippedItemInfo() const
 void UEquipComponent::UpdateEquip(const TArray<FInventoryContents>& NewInventory)
 {
 	/** Ensure that equipped item still exists */
-	if (HasItemEquipped() && !InventoryComponent->GetItemByHandle(GetEquippedItem()).IsValid())
+	if (HasItemEquipped() && !InventoryComponent->GetItemDataChecked(GetEquippedItem()).IsValid())
 		UnequipItem();
 }
 

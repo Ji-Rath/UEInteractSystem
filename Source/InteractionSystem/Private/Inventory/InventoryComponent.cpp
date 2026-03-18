@@ -42,14 +42,22 @@ void UInventoryComponent::RemoveFromInventory(const FItemHandle& ItemHandle)
 	}
 }
 
-FInventoryContents UInventoryComponent::GetItemByHandle(const FItemHandle& ItemHandle) const
+const FInventoryContents& UInventoryComponent::GetItemDataChecked(const FItemHandle& ItemHandle) const
 {
-	if (auto ItemContents = Inventory.Items.FindByKey(ItemHandle))
+	const FInventoryContents* ItemContents = Inventory.Items.FindByKey(ItemHandle);
+	check(ItemContents);
+	
+	return *ItemContents;
+}
+
+FInventoryContents* UInventoryComponent::GetItemDataPtr(const FItemHandle& ItemHandle)
+{
+	if (FInventoryContents* ItemContents = Inventory.Items.FindByKey(ItemHandle))
 	{
-		return *ItemContents;
+		return ItemContents;
 	}
 	
-	return FInventoryContents();
+	return nullptr;
 }
 
 bool UInventoryComponent::FindItemByData(const UItemInformation* ItemData, FItemHandle& ItemHandle) const
@@ -155,7 +163,7 @@ FInventoryContents UInventoryComponent::FindItemByHandle(const FItemHandle& Item
 		// Skip template object
 		if (Itr->IsTemplate()) { continue; }
 		
-		auto Item = Itr->GetItemByHandle(ItemHandle);
+		auto Item = Itr->GetItemDataChecked(ItemHandle);
 		if (Item.IsValid()) { return Item; }
 	}
 	

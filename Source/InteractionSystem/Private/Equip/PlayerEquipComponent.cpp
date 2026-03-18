@@ -63,7 +63,7 @@ void UPlayerEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 	
 	UnequipItem();
 
-	const FInventoryContents& ItemContents = InventoryComponent->GetItemByHandle(Item);
+	const FInventoryContents& ItemContents = InventoryComponent->GetItemDataChecked(Item);
 	if (!ItemContents.IsValid())
 	{
 		UE_LOG(LogPlayerEquip, Error, TEXT("%s: Item does not exist!"), *GetOwner()->GetName());

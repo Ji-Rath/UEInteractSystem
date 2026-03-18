@@ -32,6 +32,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
 	static const TInstancedStruct<FItemData>& GetItemDataByHandle(const FItemHandle& ItemHandle);
 	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
+	static TInstancedStruct<FItemData>& GetItemDataMutableByHandle(const FItemHandle& ItemHandle);
+
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	static void AddItemState(const FItemHandle& ItemHandle, FGameplayTagContainer InState);
 	

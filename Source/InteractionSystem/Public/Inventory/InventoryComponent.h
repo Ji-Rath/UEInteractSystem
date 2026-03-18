@@ -53,7 +53,8 @@ public:
 	 * @return Slot with containing item
 	*/
 	UFUNCTION(BlueprintCallable, Category="Inventory")
-	FInventoryContents GetItemByHandle(const FItemHandle& ItemHandle) const;
+	const FInventoryContents& GetItemDataChecked(const FItemHandle& ItemHandle) const;
+	FInventoryContents* GetItemDataPtr(const FItemHandle& ItemHandle);
 
 	UFUNCTION(BlueprintCallable, Category="Inventory")
 	bool FindItemByData(const UItemInformation* ItemData, FItemHandle& ItemHandle) const;

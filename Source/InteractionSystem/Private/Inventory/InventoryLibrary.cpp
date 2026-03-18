@@ -22,31 +22,31 @@ const TInstancedStruct<FItemData>& UInventoryLibrary::GetItemDataByHandle(const 
 {
 	check(ItemHandle.OwningInventory)
 	
-	return ItemHandle.OwningInventory->GetItemByHandle(ItemHandle).ItemData;
+	return ItemHandle.OwningInventory->GetItemDataPtr(ItemHandle)->ItemData;
 }
 
 TInstancedStruct<FItemData>& UInventoryLibrary::GetItemDataMutableByHandle(const FItemHandle& ItemHandle)
 {
 	check(ItemHandle.OwningInventory)
 	
-	return ItemHandle.OwningInventory->GetItemByHandle(ItemHandle).ItemData;
+	return ItemHandle.OwningInventory->GetItemDataPtr(ItemHandle)->ItemData;
 }
 
 void UInventoryLibrary::AddItemState(const FItemHandle& ItemHandle, FGameplayTagContainer InState)
 {
-	TInstancedStruct<FItemData> ItemData = GetItemDataByHandle(ItemHandle);
+	TInstancedStruct<FItemData>& ItemData = GetItemDataMutableByHandle(ItemHandle);
 	ItemData.GetMutable().ItemState.AppendTags(InState);
 }
 
 void UInventoryLibrary::RemoveItemState(const FItemHandle& ItemHandle, FGameplayTagContainer InState)
 {
-	TInstancedStruct<FItemData> ItemData = GetItemDataByHandle(ItemHandle);
+	TInstancedStruct<FItemData>& ItemData = GetItemDataMutableByHandle(ItemHandle);
 	ItemData.GetMutable().ItemState.RemoveTags(InState);
 }
 
 void UInventoryLibrary::SetItemAttribute(const FItemHandle& ItemHandle, const FItemAttribute& InAttribute)
 {
-	TInstancedStruct<FItemData> ItemData = GetItemDataByHandle(ItemHandle);
+	TInstancedStruct<FItemData>& ItemData = GetItemDataMutableByHandle(ItemHandle);
 	
 	// Override value or add attribute if it doesnt exist
 	if (FItemAttribute* Item = ItemData.GetMutable().ItemAttributes.FindByKey(InAttribute))
@@ -61,19 +61,19 @@ void UInventoryLibrary::SetItemAttribute(const FItemHandle& ItemHandle, const FI
 
 bool UInventoryLibrary::DoesItemHaveState(const FItemHandle& ItemHandle, FGameplayTagContainer InState, bool bCheckExact)
 {
-	TInstancedStruct<FItemData> ItemData = GetItemDataByHandle(ItemHandle);
+	TInstancedStruct<FItemData>& ItemData = GetItemDataMutableByHandle(ItemHandle);
 	return bCheckExact ? ItemData.GetMutable().ItemState.HasAllExact(InState) : ItemData.GetMutable().ItemState.HasAll(InState);
 }
 
 bool UInventoryLibrary::DoesItemHaveAttribute(const FItemHandle& ItemHandle, FGameplayTag InAttributeTag)
 {
-	TInstancedStruct<FItemData> ItemData = GetItemDataByHandle(ItemHandle);
+	TInstancedStruct<FItemData>& ItemData = GetItemDataMutableByHandle(ItemHandle);
 	return ItemData.GetMutable().ItemAttributes.FindByKey(InAttributeTag) != nullptr;
 }
 
 float UInventoryLibrary::GetItemAttributeValue(const FItemHandle& ItemHandle, FGameplayTag InAttributeTag)
 {
-	TInstancedStruct<FItemData> ItemData = GetItemDataByHandle(ItemHandle);
+	TInstancedStruct<FItemData>& ItemData = GetItemDataMutableByHandle(ItemHandle);
 	FItemAttribute* ItemAttribute = ItemData.GetMutable().ItemAttributes.FindByKey(InAttributeTag);
 	
 	return ItemAttribute ? ItemAttribute->Value : 0.0f;
