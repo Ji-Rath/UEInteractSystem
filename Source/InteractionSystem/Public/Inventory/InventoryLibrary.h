@@ -30,7 +30,25 @@ public:
 	static bool IsValid(const FItemHandle& ItemHandle);
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
-	static TInstancedStruct<FItemData> GetItemDataByHandle(const FItemHandle& ItemHandle);
+	static const TInstancedStruct<FItemData>& GetItemDataByHandle(const FItemHandle& ItemHandle);
+	
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	static void AddItemState(const FItemHandle& ItemHandle, FGameplayTagContainer InState);
+	
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	static void RemoveItemState(const FItemHandle& ItemHandle, FGameplayTagContainer InState);
+	
+	UFUNCTION(BlueprintCallable, Category="Inventory")
+	static void SetItemAttribute(const FItemHandle& ItemHandle, const FItemAttribute& InAttribute);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
+	static bool DoesItemHaveState(const FItemHandle& ItemHandle, FGameplayTagContainer InState, bool bCheckExact = false);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
+	static bool DoesItemHaveAttribute(const FItemHandle& ItemHandle, FGameplayTag InAttributeTag);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Inventory")
+	static float GetItemAttributeValue(const FItemHandle& ItemHandle, FGameplayTag InAttributeTag);
 	
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Equal (ItemHandle)", CompactNodeTitle = "==", ScriptMethod = "Equals", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Item")
 	static bool EqualEqual_ItemHandleItemHandle(const FItemHandle& A, const FItemHandle& B);

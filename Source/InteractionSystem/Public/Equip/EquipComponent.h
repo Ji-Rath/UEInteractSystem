@@ -58,6 +58,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "PlayerEquip")
 	void UnequipItem();
 	virtual void UnequipItem_Implementation();
+	
+	/** Equips the specified item. Will unequip if the item is already equipped */
+	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
+	void ToggleEquippedItem(const FItemHandle& Item);
 
 	/**
 	 * Determines whether the player has an item equipped

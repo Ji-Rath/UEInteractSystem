@@ -143,9 +143,23 @@ void UEquipComponent::UnequipItem_Implementation()
 	OnUpdateEquipState.Broadcast(FItemHandle());
 }
 
+void UEquipComponent::ToggleEquippedItem(const FItemHandle& Item)
+{
+	if (EquippedItem == Item)
+	{
+		UnequipItem();
+	}
+	else
+	{
+		EquipItem(Item);
+	}
+}
+
 void UEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 {
 	if (!Item.IsValid()) { return; }
+	if (Item == EquippedItem) { return; }
+	
 	EquippedItem = Item;
 	
 	check(GetEquippedItemInfo());

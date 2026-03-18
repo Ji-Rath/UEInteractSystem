@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "ItemVisual.h"
 #include "Engine/DataAsset.h"
 #include "Engine/DataTable.h"
+#include "Inventory/InventoryInfo.h"
 #include "ItemData.generated.h"
 
 class UItemAction;
@@ -81,6 +83,14 @@ public:
 	// The max stack possible for the item
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="ItemInfo", meta=(EditCondition="StackableType == EStackableType::Stackable", EditConditionHides))
 	int32 MaxStack;
+	
+	// Default dynamic state data for the item
+	UPROPERTY(SaveGame, EditAnywhere, Category = "Item")
+	FGameplayTagContainer DefaultItemState;
+	
+	// Default attributes for dynamic float-type data within the item
+	UPROPERTY(SaveGame, EditAnywhere, Category = "Item")
+	TArray<FItemAttribute> DefaultItemAttributes;
 	
 	bool CanStack(int Count) const
 	{

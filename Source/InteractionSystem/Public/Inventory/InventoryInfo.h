@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Engine/DataTable.h"
 #include "InstancedStruct.h"
 #include "Net/Serialization/FastArraySerializer.h"
@@ -43,27 +44,75 @@ struct FItemHandle
 };
 
 /**
+ * Tag/Float values for items. Can be useful for storing dynamic data such as durability, level, etc
+ */
+USTRUCT(BlueprintType)
+struct FItemAttribute
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame, Category = "Item")
+	FGameplayTag AttributeTag;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame, Category = "Item")
+	float Value;
+	
+	bool operator==(const FItemAttribute& ItemAttribute) const
+	{
+		return AttributeTag == ItemAttribute.AttributeTag;
+	}
+	
+	bool operator!=(const FItemAttribute& ItemAttribute) const
+	{
+		return !(*this == ItemAttribute);
+	}
+	
+	bool operator==(const FGameplayTag& InAttributeTag) const
+	{
+		return AttributeTag == InAttributeTag;
+	}
+	
+	bool IsValid() const
+	{
+		return AttributeTag.IsValid();
+	}
+};
+
+/**
  * Item data which is dynamically stored in a InventoryComponent
- * Can be extended to allow for additional parameters if needed
  */
 USTRUCT(BlueprintType)
 struct FItemData
 {
 	GENERATED_BODY()
 	
+	virtual ~FItemData() = default;
 	FItemData() = default;
 
 	// Used to easily get data table row in editor. Is not reliable to give accurate info when playing in-game
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, SaveGame, Category = "Item")
 	TObjectPtr<UItemInformation> ItemInformation;
 
 	// The current item count in the stack
-	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, SaveGame)
+	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadWrite, Category = "Item")
 	int Count = 0;
+	
+	// State data that may be defined within the item
+	UPROPERTY(SaveGame, VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	FGameplayTagContainer ItemState;
+	
+	// Attributes for dynamic float-type data within the item
+	UPROPERTY(SaveGame, VisibleAnywhere, BlueprintReadOnly, Category = "Item")
+	TArray<FItemAttribute> ItemAttributes;
 
 	virtual bool operator==(const FItemData& ItemData) const
 	{
-		return ItemInformation == ItemData.ItemInformation;
+		return ItemInformation == ItemData.ItemInformation && ItemAttributes == ItemData.ItemAttributes && ItemState == ItemData.ItemState;
+	}
+	
+	virtual bool operator!=(const FItemData& ItemData) const
+	{
+		return !(*this == ItemData);
 	}
 	
 	virtual bool IsValid() const

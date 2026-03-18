@@ -12,6 +12,7 @@ AItemVisual::AItemVisual()
 	PrimaryActorTick.bCanEverTick = false;
 	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Item Visual"));
+	MeshComp->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::FirstPerson;
 	RootComponent = MeshComp;
 }
 
