@@ -105,10 +105,22 @@ bool UInventoryComponent::AddToInventory(const FItemData& Item, FItemHandle& Out
 			if (CanAddToInventory(Item))
 			{
 				UE_LOG(LogInventory, Log, TEXT("Added item %s to inventory"), *Item.ItemInformation->DisplayName.ToString());
-		
-				auto ItemCopy = Item;
+
+				FItemData ItemCopy = Item;
+				
+				// Fix item count
 				ItemCopy.Count = CountToAdd;
 				CountToAdd = ItemCopy.FixCount();
+				
+				// Copy default values (if the array is empty)
+				if (ItemCopy.ItemAttributes.IsEmpty())
+				{
+					ItemCopy.ItemAttributes = ItemCopy.ItemInformation->DefaultItemAttributes;
+				}
+				if (ItemCopy.ItemState.IsEmpty())
+				{
+					ItemCopy.ItemState = ItemCopy.ItemInformation->DefaultItemState;
+				}
 		
 				auto& ItemAdded = Inventory.Items.Emplace_GetRef(GenerateItem(TInstancedStruct<FItemData>::Make(ItemCopy)));
 				OutItemHandle = ItemAdded.ItemHandle;
