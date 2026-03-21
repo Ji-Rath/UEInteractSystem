@@ -175,8 +175,8 @@ FInventoryContents UInventoryComponent::FindItemByHandle(const FItemHandle& Item
 		// Skip template object
 		if (Itr->IsTemplate()) { continue; }
 		
-		auto Item = Itr->GetItemDataChecked(ItemHandle);
-		if (Item.IsValid()) { return Item; }
+		const FInventoryContents* Item = Itr->GetItemDataPtr(ItemHandle);
+		if (Item) { return *Item; }
 	}
 	
 	return FInventoryContents();
