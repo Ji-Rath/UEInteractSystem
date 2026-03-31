@@ -155,6 +155,11 @@ void UEquipComponent::ToggleEquippedItem(const FItemHandle& Item)
 	}
 }
 
+UItemAction* UEquipComponent::GetItemAction() const
+{
+	return CurrentAction;
+}
+
 void UEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 {
 	if (!Item.IsValid()) { return; }

@@ -62,6 +62,9 @@ public:
 	/** Equips the specified item. Will unequip if the item is already equipped */
 	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
 	void ToggleEquippedItem(const FItemHandle& Item);
+	
+	UFUNCTION(BlueprintCallable, Category = "PlayerEquip")
+	UItemAction* GetItemAction() const;
 
 	/**
 	 * Determines whether the player has an item equipped
