@@ -13,7 +13,12 @@ AItemVisual::AItemVisual()
 	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Item Visual"));
 	MeshComp->FirstPersonPrimitiveType = EFirstPersonPrimitiveType::FirstPerson;
+	MeshComp->SetIsReplicated(true);
+	MeshComp->bReceivesDecals = false;
+	
 	RootComponent = MeshComp;
+	
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
