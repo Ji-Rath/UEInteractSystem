@@ -10,7 +10,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogInteractor, Log, All);
 
 class UDEPRECATED_InteractableComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHover, const TWeakObjectPtr<UPrimitiveComponent>&, Component);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHover, const UPrimitiveComponent*, Component);
 
 /**
  * Allows the player to interact with interactables, executing functionality based on what was interacted with
@@ -27,6 +27,9 @@ public:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
+	UPrimitiveComponent* GetHoveredPrimitive() const { return HoverPrimitive.Get(); }
 
 	/**
 	 * Called when the player wants to interact with the currently viewed interactable

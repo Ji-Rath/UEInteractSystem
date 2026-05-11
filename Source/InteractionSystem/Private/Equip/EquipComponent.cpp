@@ -162,8 +162,10 @@ UItemAction* UEquipComponent::GetItemAction() const
 
 void UEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 {
-	if (!Item.IsValid()) { return; }
+	if (!ensure(Item.IsValid())) { return; }
 	if (Item == EquippedItem) { return; }
+	
+	UnequipItem(); // Unequip currently equipped item
 	
 	EquippedItem = Item;
 	
@@ -174,6 +176,7 @@ void UEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 		FStreamableDelegate::CreateWeakLambda(this, [&, EquipItem = Item]()
 		{
 			OnUpdateEquipState.Broadcast(EquipItem);
-		}));
+		})
+	);
 }
 

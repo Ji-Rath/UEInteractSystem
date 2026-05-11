@@ -53,7 +53,7 @@ void UInteractorComponent::UpdateHoverActor()
 	// This also checks if the actor suddenly disappears (like when being picked up)
 	if (HoverPrimitive != Hit.Component || HoverPrimitive.IsStale())
 	{
-		OnUpdateHover.Broadcast(Hit.Component);
+		OnUpdateHover.Broadcast(Hit.Component.Get());
 	}
 
 	HoverPrimitive = Hit.Component;

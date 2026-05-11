@@ -19,7 +19,7 @@ struct FItemHandle
 {
 	GENERATED_BODY()
 
-	UPROPERTY(SaveGame)
+	UPROPERTY(VisibleAnywhere, SaveGame)
 	int HandleID = -1;
 	
 	UPROPERTY(SaveGame)
