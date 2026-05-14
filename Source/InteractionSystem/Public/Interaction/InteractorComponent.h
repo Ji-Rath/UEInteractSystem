@@ -38,9 +38,12 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
 	void Interact();
+	
+	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
+	void FinishInteract();
 
 	UFUNCTION(BlueprintCallable)
-	void InteractWith(USceneComponent* Component);
+	void InteractWith(UPrimitiveComponent* Component);
 	
 	void InteractWith(AActor* Actor);
 
@@ -53,13 +56,23 @@ protected:
 	virtual void UpdateHoverActor();
 
 	UFUNCTION(Server, Reliable)
-	void ServerInteract(USceneComponent* Component);
+	void ServerInteract(UPrimitiveComponent* Component);
 
 	UFUNCTION()
-	virtual void PerformInteraction(USceneComponent* Component);
+	virtual void PerformInteraction(UPrimitiveComponent* Component);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerFinishInteract();
+	
+	UFUNCTION()
+	virtual void PerformFinishInteraction();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerInteract")
 	TWeakObjectPtr<UPrimitiveComponent> HoverPrimitive = nullptr;
+	
+	// The current interactable that we are interacting with
+	UPROPERTY()
+	TWeakObjectPtr<UPrimitiveComponent> ActiveInteraction;
 
 	//Distance that the player can interact with objects
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerInteract", meta=(Units="cm"))
