@@ -55,7 +55,7 @@ void UTriggerComponent::TriggerActors(AActor* Instigator, UPrimitiveComponent* C
 void UTriggerComponent::ExecuteInteraction(AActor* Instigator)
 {
 	/** Call trigger function for all actors in array */
-	for (const auto Interactable : Interactables)
+	for (const auto& Interactable : Interactables)
 	{
 		if (auto InteractableComponent = Cast<UInteractableComponent>(Interactable.GetComponent(Interactable.OtherActor.Get())))
 		{
