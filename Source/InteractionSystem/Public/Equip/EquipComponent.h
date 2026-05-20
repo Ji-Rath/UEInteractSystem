@@ -35,7 +35,7 @@ protected:
 	void UpdateEquip(const TArray<FInventoryContents>& NewInventory);
 	
 	// The item that is currently equipped
-	UPROPERTY(Replicated, SaveGame)
+	UPROPERTY(VisibleAnywhere, Replicated, SaveGame, Category = "PlayerEquip")
 	FItemHandle EquippedItem;
 	
 	UPROPERTY()

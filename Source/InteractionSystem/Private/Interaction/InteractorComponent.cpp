@@ -6,7 +6,6 @@
 #include "Components/PrimitiveComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/PlayerController.h"
-#include "Interaction/Interactable.h"
 #include "Interaction/InteractableComponent.h"
 
 DEFINE_LOG_CATEGORY(LogInteractor)
@@ -29,6 +28,11 @@ void UInteractorComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	if (GetOwner()->HasLocalNetOwner())
 	{
 		UpdateHoverActor();
+		
+		if (!ActiveInteraction.IsExplicitlyNull() && ActiveInteraction != GetHoveredPrimitive())
+		{
+			FinishInteract();
+		}
 	}
 }
 
@@ -53,25 +57,44 @@ void UInteractorComponent::UpdateHoverActor()
 	// This also checks if the actor suddenly disappears (like when being picked up)
 	if (HoverPrimitive != Hit.Component || HoverPrimitive.IsStale())
 	{
-		OnUpdateHover.Broadcast(Hit.Component);
+		OnUpdateHover.Broadcast(Hit.Component.Get());
 	}
 
 	HoverPrimitive = Hit.Component;
 }
 
-void UInteractorComponent::PerformInteraction(USceneComponent* Component)
+void UInteractorComponent::PerformInteraction(UPrimitiveComponent* Component)
 {
 	AActor* Owner = Component->GetOwner();
 	if (auto Interactable = Owner->GetComponentByClass<UInteractableComponent>())
 	{
 		if (Interactable->IsPlayerInteractable())
 		{
+			ActiveInteraction = Component;
 			Interactable->Interact(GetOwner(), Component);
 		}
 	}
 }
 
-void UInteractorComponent::ServerInteract_Implementation(USceneComponent* Component)
+void UInteractorComponent::PerformFinishInteraction()
+{
+	AActor* Owner = ActiveInteraction.IsValid() ? ActiveInteraction->GetOwner() : nullptr;
+	UInteractableComponent* Interactable = Owner ? Owner->GetComponentByClass<UInteractableComponent>() : nullptr;
+	
+	if (Interactable)
+	{
+		Interactable->FinishInteract(GetOwner(), ActiveInteraction.Get());
+	}
+	
+	ActiveInteraction.Reset();
+}
+
+void UInteractorComponent::ServerFinishInteract_Implementation()
+{
+	PerformFinishInteraction();
+}
+
+void UInteractorComponent::ServerInteract_Implementation(UPrimitiveComponent* Component)
 {
 	PerformInteraction(Component);
 }
@@ -87,7 +110,20 @@ void UInteractorComponent::Interact()
 	}
 }
 
-void UInteractorComponent::InteractWith(USceneComponent* Component)
+void UInteractorComponent::FinishInteract()
+{
+	if (!ActiveInteraction.IsValid()) { return; }
+	
+	PerformFinishInteraction();
+	
+	// Perform finish interaction on server as well
+	if (!GetOwner()->HasAuthority())
+	{
+		ServerFinishInteract();
+	}
+}
+
+void UInteractorComponent::InteractWith(UPrimitiveComponent* Component)
 {
 	PerformInteraction(Component);
 
@@ -100,5 +136,5 @@ void UInteractorComponent::InteractWith(USceneComponent* Component)
 
 void UInteractorComponent::InteractWith(AActor* Actor)
 {
-	InteractWith(Actor->GetRootComponent());
+	InteractWith(Cast<UPrimitiveComponent>(Actor->GetRootComponent()));
 }

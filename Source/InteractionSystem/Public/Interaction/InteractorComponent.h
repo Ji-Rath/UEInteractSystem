@@ -10,7 +10,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogInteractor, Log, All);
 
 class UDEPRECATED_InteractableComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHover, const TWeakObjectPtr<UPrimitiveComponent>&, Component);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateHover, const UPrimitiveComponent*, Component);
 
 /**
  * Allows the player to interact with interactables, executing functionality based on what was interacted with
@@ -27,6 +27,9 @@ public:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
+	UPrimitiveComponent* GetHoveredPrimitive() const { return HoverPrimitive.Get(); }
 
 	/**
 	 * Called when the player wants to interact with the currently viewed interactable
@@ -35,9 +38,12 @@ public:
 	*/
 	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
 	void Interact();
+	
+	UFUNCTION(BlueprintCallable, Category = "PlayerInteract")
+	void FinishInteract();
 
 	UFUNCTION(BlueprintCallable)
-	void InteractWith(USceneComponent* Component);
+	void InteractWith(UPrimitiveComponent* Component);
 	
 	void InteractWith(AActor* Actor);
 
@@ -50,13 +56,23 @@ protected:
 	virtual void UpdateHoverActor();
 
 	UFUNCTION(Server, Reliable)
-	void ServerInteract(USceneComponent* Component);
+	void ServerInteract(UPrimitiveComponent* Component);
 
 	UFUNCTION()
-	virtual void PerformInteraction(USceneComponent* Component);
+	virtual void PerformInteraction(UPrimitiveComponent* Component);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerFinishInteract();
+	
+	UFUNCTION()
+	virtual void PerformFinishInteraction();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "PlayerInteract")
 	TWeakObjectPtr<UPrimitiveComponent> HoverPrimitive = nullptr;
+	
+	// The current interactable that we are interacting with
+	UPROPERTY()
+	TWeakObjectPtr<UPrimitiveComponent> ActiveInteraction;
 
 	//Distance that the player can interact with objects
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerInteract", meta=(Units="cm"))

@@ -13,7 +13,7 @@ public class InteractionSystem : ModuleRules
 			new string[]
 			{
 				"Core",
-				"DeveloperSettings", "NetCore", "GameplayTags"
+				"DeveloperSettings", "NetCore", "GameplayTags", "GameplayAbilities"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

@@ -48,7 +48,7 @@ private:
 	void EquipActorSpawned(AItemVisual* Actor);
 
 	// Visual representation of the equipped item
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, Category = "PlayerEquip")
 	AActor* EquippedActor;
 
 	/** Starting offset for equipping an item */

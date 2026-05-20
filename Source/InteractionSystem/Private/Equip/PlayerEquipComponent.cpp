@@ -55,20 +55,10 @@ void UPlayerEquipComponent::EquipItem_Implementation(const FItemHandle& Item)
 {
 	Super::EquipItem_Implementation(Item);
 	
-	if (!Item.IsValid())
-	{
-		UE_LOG(LogPlayerEquip, Error, TEXT("%s: EquipItem_Implementation: Item is invalid"), *GetOwner()->GetName());
-		return;
-	}
-	
-	UnequipItem();
+	if (!Item.IsValid()) { return; }
+	if (Item == EquippedItem) { return; }
 
 	const FInventoryContents& ItemContents = InventoryComponent->GetItemDataChecked(Item);
-	if (!ItemContents.IsValid())
-	{
-		UE_LOG(LogPlayerEquip, Error, TEXT("%s: Item does not exist!"), *GetOwner()->GetName());
-		return;
-	}
 	
 	FItemActorSpawned OnActorSpawned;
 	OnActorSpawned.BindDynamic(this, &ThisClass::EquipActorSpawned);
