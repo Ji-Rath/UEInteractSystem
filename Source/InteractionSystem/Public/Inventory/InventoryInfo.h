@@ -82,7 +82,7 @@ struct FItemAttribute
  * Item data which is dynamically stored in a InventoryComponent
  */
 USTRUCT(BlueprintType)
-struct FItemData
+struct INTERACTIONSYSTEM_API FItemData
 {
 	GENERATED_BODY()
 	
