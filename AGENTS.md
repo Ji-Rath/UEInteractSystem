@@ -1,12 +1,8 @@
-# AGENTS.md
+# InteractSystem
 
-This file provides guidance to agents when working with the InteractSystem plugin.
+Component-based interaction framework for interactable objects, inventory, equipment, and physics grab.
 
-## Plugin Overview
-
-**InteractSystem** is a comprehensive user interaction orchestration plugin for Unreal Engine that provides end-to-end interaction management. The system handles event routing, session management, cross-plugin interaction triggering, and third-party service integration.
-
-### Key Capabilities
+## Capabilities
 
 | Capability | Description |
 |------------|-------------|
@@ -16,32 +12,6 @@ This file provides guidance to agents when working with the InteractSystem plugi
 | **Physics Interaction** | Grab, push, and throw physics objects with configurable parameters |
 | **Trigger System** | Chain interactions between multiple interactable objects |
 | **Toggleable Interface** | On/off state management for interactive objects |
-
-## Runtime Requirements
-
-| Environment | Minimum Version | Recommended Version |
-|-------------|-----------------|---------------------|
-| Unreal Engine | 5.0 | 5.3+ |
-| Windows | 10 | 11 |
-
-## Dependencies
-
-| Module | Version Constraint | Required |
-|--------|-------------------|----------|
-| Core | >= 5.0 | Yes |
-| CoreUObject | >= 5.0 | Yes |
-| Engine | >= 5.0 | Yes |
-| InputCore | >= 5.0 | Yes |
-| DeveloperSettings | >= 5.0 | Yes |
-| NetCore | >= 5.0 | Yes |
-| GameplayTags | >= 5.0 | Yes |
-
-## Security Considerations
-
-- **Network Replication:** All inventory and interaction state changes are server-authoritative
-- **Replication:** Uses `FFastArraySerializer` for inventory replication
-- **Validation:** Item data is validated before being added to inventory
-- **Save Game:** Supports save game serialization
 
 ## Key Classes
 
@@ -54,18 +24,32 @@ This file provides guidance to agents when working with the InteractSystem plugi
 | `UTriggerComponent` | Chain interaction triggers |
 | `UPhysicsGrabComponent` | Physics object interaction |
 
-## Key Structs
+## Key Structs & Interfaces
 
-| Struct | Blueprint Type |
-|--------|----------------|
-| `FItemHandle` | Yes |
-| `FItemData` | Yes |
-| `FInventoryContents` | Yes |
-| `FInventoryContainer` | No |
-| `FItemAttribute` | Yes |
+| Name | Type | Purpose |
+|------|------|---------|
+| `FItemHandle` | Struct | Reference to inventory item |
+| `FItemData` | Struct | Item data with count/stacking |
+| `FInventoryContents` | Struct | Inventory entry with replication |
+| `FInventoryContainer` | Struct | Full inventory container |
+| `FItemAttribute` | Struct | Item attribute data |
+| `IToggleable` | Interface | `Toggle`, `SetToggle` methods |
 
-## Key Interfaces
+## Common Pitfalls
 
-| Interface | Methods |
-|-----------|---------|
-| `IToggleable` | `Toggle`, `SetToggle` |
+- Inventory replication requires authority - `AddToInventory` etc. are `BlueprintAuthorityOnly`
+- `FItemHandle::IsValid()` returns false when `HandleID == -1` or `OwningInventory` is null
+- `EStackableType::NoStacking`: `GetMaxStack()` returns 1 regardless of MaxStack field
+
+See `.claude/conventions.md` for more patterns.
+
+## Integration Points
+
+- **HorrorFeatures**: Character uses `UInteractableComponent` for interactions
+- See `.claude/plugin-integration.md` for cross-plugin dependency matrix
+
+## Human Review Required
+
+- Changes to `IInteractable` interface
+- Changes to `FItemData` / `FInventoryContents` / `FInventoryContainer`
+- See `.claude/human-review-checklist.md` for full list
