@@ -41,15 +41,15 @@ Component-based interaction framework for interactable objects, inventory, equip
 - `FItemHandle::IsValid()` returns false when `HandleID == -1` or `OwningInventory` is null
 - `EStackableType::NoStacking`: `GetMaxStack()` returns 1 regardless of MaxStack field
 
-See `.claude/conventions.md` for more patterns.
+See `.agents/conventions.md` for more patterns.
 
 ## Integration Points
 
 - **HorrorFeatures**: Character uses `UInteractableComponent` for interactions
-- See `.claude/plugin-integration.md` for cross-plugin dependency matrix
+- See `.agents/plugin-integration.md` for cross-plugin dependency matrix
 
 ## Human Review Required
 
 - Changes to `IInteractable` interface
 - Changes to `FItemData` / `FInventoryContents` / `FInventoryContainer`
-- See `.claude/human-review-checklist.md` for full list
+- See `.agents/human-review-checklist.md` for full list
